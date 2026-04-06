@@ -1168,6 +1168,22 @@ function distributeTasksAcrossWeek(tasks) {
 // ============================================
 function getTodayName() { return DAY_NAMES[new Date().getDay()]; }
 
+function taskAppliesOnDay(task, dayName) {
+  // Task directly assigned to this day
+  if (task.day === dayName) return true;
+  // Recurring tasks show on applicable days
+  if (!task.recurrence || task.recurrence === 'None') return false;
+  if (task.recurrence === 'Daily') return true;
+  if (task.recurrence === 'Weekdays') {
+    const dayIdx = DAY_NAMES.indexOf(dayName);
+    return dayIdx >= 1 && dayIdx <= 5; // Mon-Fri
+  }
+  if (task.recurrence === 'Weekly') {
+    return task.day === dayName; // same day each week (already matched above)
+  }
+  return false;
+}
+
 function selectDay(dayName) {
   state.selectedDay = dayName;
   render();
@@ -1189,7 +1205,7 @@ function nextDay() {
 
 function getTodayTasks() {
   const today = getTodayName();
-  return state.tasks.filter(t => t.day === today).sort((a, b) => {
+  return state.tasks.filter(t => taskAppliesOnDay(t, today)).sort((a, b) => {
     if (a.status === 'Completed' && b.status !== 'Completed') return 1;
     if (b.status === 'Completed' && a.status !== 'Completed') return -1;
     return 0;
@@ -1201,7 +1217,7 @@ function getWeekTasks() {
   const days = [];
   for (let i = todayIdx + 1; i <= 6; i++) {
     const dayName = DAY_NAMES[i];
-    const tasks = state.tasks.filter(t => t.day === dayName);
+    const tasks = state.tasks.filter(t => taskAppliesOnDay(t, dayName));
     if (tasks.length > 0 || i <= 6) {
       days.push({ name: dayName, short: DAY_SHORT[i], tasks });
     }
@@ -1345,7 +1361,7 @@ function renderHeader() {
 
 function renderTodayHero() {
   const selectedDayName = state.selectedDay || getTodayName();
-  const selectedDayTasks = state.tasks.filter(t => t.day === selectedDayName);
+  const selectedDayTasks = state.tasks.filter(t => taskAppliesOnDay(t, selectedDayName));
   const active = selectedDayTasks.filter(t => t.status !== 'Completed');
   const done = selectedDayTasks.filter(t => t.status === 'Completed');
   const totalMin = getTotalMinutes(active);
@@ -1370,7 +1386,7 @@ function renderWeekPills() {
   for (let i = 0; i <= 6; i++) {
     const dayName = DAY_NAMES[i];
     const short = DAY_SHORT[i];
-    const dayTasks = state.tasks.filter(t => t.day === dayName && t.status !== 'Completed');
+    const dayTasks = state.tasks.filter(t => taskAppliesOnDay(t, dayName) && t.status !== 'Completed');
     const isToday = i === todayIdx;
     const isSelected = dayName === selectedDayName;
     const cls = `week-day-pill${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}${dayTasks.length > 0 ? ' has-tasks' : ''}`;
@@ -1384,7 +1400,7 @@ function renderWeekPills() {
 
 function renderTodayTasks() {
   const selectedDayName = state.selectedDay || getTodayName();
-  const selectedDayTasks = state.tasks.filter(t => t.day === selectedDayName);
+  const selectedDayTasks = state.tasks.filter(t => taskAppliesOnDay(t, selectedDayName));
   let html = '<div class="section"><div class="task-list">';
 
   if (selectedDayTasks.length === 0) {
@@ -1665,48 +1681,9 @@ async function toggleTask(idx) {
     t.status = 'Completed';
     t.completedAt = new Date().toISOString();
 
-    // Handle recurring tasks: auto-create next occurrence
-    if (t.recurrence && t.recurrence !== 'None') {
-      const nextTask = { ...t };
-      nextTask.status = 'Not Started';
-      nextTask.completedAt = '';
-      nextTask.createdDate = new Date().toISOString();
-
-      const currentDate = new Date();
-      const currentDayIdx = currentDate.getDay();
-      const currentDayName = DAY_NAMES[currentDayIdx];
-
-      let nextDayName = currentDayName;
-
-      if (t.recurrence === 'Daily') {
-        // Next day
-        const nextDate = new Date(currentDate);
-        nextDate.setDate(nextDate.getDate() + 1);
-        nextDayName = DAY_NAMES[nextDate.getDay()];
-      } else if (t.recurrence === 'Weekdays') {
-        // Next weekday (skip Sat/Sun)
-        const nextDate = new Date(currentDate);
-        nextDate.setDate(nextDate.getDate() + 1);
-        let nextDayIdx = nextDate.getDay();
-        // Skip to Monday if Saturday or Sunday
-        if (nextDayIdx === 6) {
-          nextDate.setDate(nextDate.getDate() + 2); // Skip to Monday
-          nextDayIdx = 1;
-        } else if (nextDayIdx === 0) {
-          nextDate.setDate(nextDate.getDate() + 1); // Skip to Monday
-          nextDayIdx = 1;
-        }
-        nextDayName = DAY_NAMES[nextDayIdx];
-      } else if (t.recurrence === 'Weekly') {
-        // Same day next week
-        const nextDate = new Date(currentDate);
-        nextDate.setDate(nextDate.getDate() + 7);
-        nextDayName = DAY_NAMES[nextDate.getDay()];
-      }
-
-      nextTask.day = nextDayName;
-      state.tasks.push(nextTask);
-    }
+    // Recurring tasks (Daily/Weekdays) already show on all applicable days via taskAppliesOnDay().
+    // For Weekly recurrence, the task stays on the same day, so no duplication needed.
+    // Completing a recurring task just marks it done — unchecking resets it.
   }
   render();
   await saveTasks();
