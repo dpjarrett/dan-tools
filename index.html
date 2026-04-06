@@ -152,16 +152,14 @@ body {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 100px;
+  padding-bottom: 120px;
 }
 
 /* Sections */
 .section { padding: 16px; }
 .section-title {
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--text-muted);
   margin-bottom: 12px;
 }
@@ -217,6 +215,7 @@ body {
   animation: slideIn 0.3s ease-out;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .task-card.completed {
@@ -271,7 +270,7 @@ body {
 .task-body { flex: 1; min-width: 0; }
 
 .task-name {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   line-height: 1.3;
   margin-bottom: 6px;
@@ -286,9 +285,9 @@ body {
 }
 
 .task-badge {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 2px 8px;
+  padding: 3px 9px;
   border-radius: 6px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -302,6 +301,14 @@ body {
 .task-time {
   font-size: 12px;
   color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.task-repeat {
+  font-size: 11px;
+  color: var(--accent);
   display: flex;
   align-items: center;
   gap: 3px;
@@ -352,12 +359,13 @@ body {
 }
 
 .day-header h3 {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
 .day-header .day-info {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-muted);
 }
 
@@ -546,38 +554,117 @@ textarea.field-input { resize: vertical; min-height: 80px; }
   transform: translateX(-50%);
   width: 100%;
   max-width: 480px;
-  background: var(--bg);
-  border-top: 1px solid var(--border);
-  padding: 8px 16px calc(var(--safe-bottom) + 8px);
+  background: transparent;
+  border-top: none;
+  padding: 0;
   display: flex;
-  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
   z-index: 50;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  pointer-events: none;
+  padding-right: 16px;
+  padding-bottom: calc(var(--safe-bottom) + 16px);
 }
 
-.bottom-nav .btn { flex: 1; justify-content: center; padding: 12px; }
+.fab {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transition: all 0.3s ease;
+  pointer-events: all;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fab:active { transform: scale(0.9); }
+
+.plan-week-link {
+  position: fixed;
+  bottom: calc(var(--safe-bottom) + 16px);
+  left: 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  pointer-events: all;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.plan-week-link:active { opacity: 0.7; }
 
 /* Week summary bar */
+.week-nav-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px 8px;
+}
+
 .week-summary {
   display: flex;
-  gap: 4px;
-  padding: 0 16px 8px;
+  gap: 6px;
+  flex: 1;
 }
+
+.week-nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.week-nav-btn:active { transform: scale(0.92); }
 
 .week-day-pill {
   flex: 1;
   text-align: center;
-  padding: 6px 2px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 600;
+  padding: 8px 4px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
   background: var(--surface);
   color: var(--text-muted);
   border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
 }
 
+.week-day-pill:active { transform: scale(0.95); }
+
 .week-day-pill.today {
+  color: var(--accent);
+}
+
+.week-day-pill.today::before {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--accent);
+  border-radius: 50%;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.week-day-pill.selected {
   border-color: var(--accent);
   color: var(--accent);
   background: var(--accent-dim);
@@ -587,9 +674,9 @@ textarea.field-input { resize: vertical; min-height: 80px; }
 
 .week-day-pill .pill-count {
   display: block;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 800;
-  margin-bottom: 1px;
+  margin-bottom: 2px;
 }
 
 /* Rollover notification */
@@ -723,7 +810,7 @@ const TIME_MINUTES = { '15min':15, '30min':30, '1hr':60, '2hrs':120, '4hrs':240,
 const PRIORITY_OPTIONS = ['Today','This Week','Next Few Weeks'];
 const STATUS_OPTIONS = ['Not Started','In Progress','Completed'];
 
-const COLUMNS = ['Task','TimeEstimate','Category','Priority','Dependencies','Status','AssignedDay','CompletionTimestamp','CreatedDate'];
+const COLUMNS = ['Task','TimeEstimate','Category','Priority','Dependencies','Status','AssignedDay','CompletionTimestamp','CreatedDate','Recurrence'];
 const HOURS_PER_DAY = 8;
 const FIXED_SHEET_ID = '1qM_1TL4lolopaudTcgxwvQEy1Z9L6Lh1PC09H72VsXg';
 
@@ -745,6 +832,7 @@ let state = {
   customCategories: [],
   toastMsg: '',
   toastTimer: null,
+  selectedDay: null, // Track selected day for day navigation
 };
 
 let tokenClient;
@@ -779,6 +867,7 @@ function gisLoaded() {
       sessionStorage.setItem('wtp_access_token', resp.access_token);
       state.authed = true;
       state.loading = true;
+      state.selectedDay = getTodayName(); // Set selected day to today
       render();
       await initSheet();
       await loadTasks();
@@ -799,6 +888,7 @@ async function maybeEnableAuth() {
       gapi.client.setToken({ access_token: savedToken });
       state.authed = true;
       state.loading = true;
+      state.selectedDay = getTodayName(); // Set selected day to today
       render();
       try {
         await initSheet();
@@ -815,6 +905,7 @@ async function maybeEnableAuth() {
         render();
       }
     } else {
+      state.selectedDay = getTodayName(); // Set selected day to today
       state.loading = false;
       render();
     }
@@ -865,7 +956,7 @@ async function initSheet() {
           resource: { requests: [{ addSheet: { properties: { title: 'Tasks' } } }] }
         });
         await gapi.client.sheets.spreadsheets.values.update({
-          spreadsheetId: stored, range: 'Tasks!A1:I1',
+          spreadsheetId: stored, range: 'Tasks!A1:J1',
           valueInputOption: 'RAW',
           resource: { values: [COLUMNS] }
         });
@@ -897,7 +988,7 @@ async function initSheet() {
 
   // Add header row
   await gapi.client.sheets.spreadsheets.values.update({
-    spreadsheetId: state.spreadsheetId, range: 'Tasks!A1:I1',
+    spreadsheetId: state.spreadsheetId, range: 'Tasks!A1:J1',
     valueInputOption: 'RAW',
     resource: { values: [COLUMNS] }
   });
@@ -913,7 +1004,7 @@ async function initSheet() {
 async function loadTasks() {
   try {
     const resp = await gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: state.spreadsheetId, range: 'Tasks!A2:I1000'
+      spreadsheetId: state.spreadsheetId, range: 'Tasks!A2:J1000'
     });
     const rows = resp.result.values || [];
     state.tasks = rows.map((r, i) => ({
@@ -927,6 +1018,7 @@ async function loadTasks() {
       day: r[6] || '',
       completedAt: r[7] || '',
       createdDate: r[8] || '',
+      recurrence: r[9] || 'None', // Backwards compatible: default to 'None'
     }));
   } catch(e) {
     console.error('Load error', e);
@@ -937,19 +1029,19 @@ async function loadTasks() {
 async function saveTasks(tasks) {
   if (!tasks) tasks = state.tasks;
   const values = tasks.map(t => [
-    t.name, t.time, t.category, t.priority, t.dependencies, t.status, t.day, t.completedAt, t.createdDate
+    t.name, t.time, t.category, t.priority, t.dependencies, t.status, t.day, t.completedAt, t.createdDate, t.recurrence || 'None'
   ]);
   // Clear existing data and write all
   try {
     await gapi.client.sheets.spreadsheets.values.clear({
-      spreadsheetId: state.spreadsheetId, range: 'Tasks!A2:I1000'
+      spreadsheetId: state.spreadsheetId, range: 'Tasks!A2:J1000'
     });
   } catch(e) {}
 
   if (values.length > 0) {
     await gapi.client.sheets.spreadsheets.values.update({
       spreadsheetId: state.spreadsheetId,
-      range: `Tasks!A2:I${values.length + 1}`,
+      range: `Tasks!A2:J${values.length + 1}`,
       valueInputOption: 'RAW',
       resource: { values }
     });
@@ -958,12 +1050,13 @@ async function saveTasks(tasks) {
 
 async function appendTask(task) {
   task.createdDate = new Date().toISOString();
+  task.recurrence = task.recurrence || 'None';
   task.row = state.tasks.length + 2;
   state.tasks.push(task);
   await gapi.client.sheets.spreadsheets.values.append({
-    spreadsheetId: state.spreadsheetId, range: 'Tasks!A:I',
+    spreadsheetId: state.spreadsheetId, range: 'Tasks!A:J',
     valueInputOption: 'RAW',
-    resource: { values: [[task.name, task.time, task.category, task.priority, task.dependencies, task.status, task.day, task.completedAt, task.createdDate]] }
+    resource: { values: [[task.name, task.time, task.category, task.priority, task.dependencies, task.status, task.day, task.completedAt, task.createdDate, task.recurrence]] }
   });
 }
 
@@ -1065,6 +1158,25 @@ function distributeTasksAcrossWeek(tasks) {
 // ============================================
 function getTodayName() { return DAY_NAMES[new Date().getDay()]; }
 
+function selectDay(dayName) {
+  state.selectedDay = dayName;
+  render();
+}
+
+function previousDay() {
+  const currentIdx = DAY_NAMES.indexOf(state.selectedDay || getTodayName());
+  const newIdx = currentIdx === 0 ? 6 : currentIdx - 1;
+  state.selectedDay = DAY_NAMES[newIdx];
+  render();
+}
+
+function nextDay() {
+  const currentIdx = DAY_NAMES.indexOf(state.selectedDay || getTodayName());
+  const newIdx = currentIdx === 6 ? 0 : currentIdx + 1;
+  state.selectedDay = DAY_NAMES[newIdx];
+  render();
+}
+
 function getTodayTasks() {
   const today = getTodayName();
   return state.tasks.filter(t => t.day === today).sort((a, b) => {
@@ -1128,12 +1240,15 @@ const ICONS = {
   check: '<polyline points="4 12 9 17 20 6"/>',
   clock: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
   link: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+  repeat: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="17 2 22 7 17 12"/><path d="M22 7H10a4 4 0 0 0-4 4v6"/><polyline points="7 22 2 17 7 12"/><path d="M2 17h12a4 4 0 0 0 4-4v-6"/></svg>',
   edit: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
   trash: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
   arrow: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>',
   warning: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
   refresh: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>',
   close: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  leftArrow: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>',
+  rightArrow: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>',
 };
 
 const APP_ICON = `<svg width="80" height="80" viewBox="0 0 80 80" fill="none">
@@ -1219,13 +1334,15 @@ function renderHeader() {
 }
 
 function renderTodayHero() {
-  const todayTasks = getTodayTasks();
-  const active = todayTasks.filter(t => t.status !== 'Completed');
-  const done = todayTasks.filter(t => t.status === 'Completed');
+  const selectedDayName = state.selectedDay || getTodayName();
+  const selectedDayTasks = state.tasks.filter(t => t.day === selectedDayName);
+  const active = selectedDayTasks.filter(t => t.status !== 'Completed');
+  const done = selectedDayTasks.filter(t => t.status === 'Completed');
   const totalMin = getTotalMinutes(active);
+  const isToday = selectedDayName === getTodayName();
 
   return `<div class="today-hero">
-    <div class="today-date">${formatDate()}</div>
+    <div class="today-date">${selectedDayName}${!isToday ? '' : ' (Today)'}</div>
     <div class="today-subtitle">${active.length} task${active.length !== 1 ? 's' : ''} remaining &middot; ${formatMinutes(totalMin)} of work</div>
     <div class="today-stats">
       <div class="stat"><div class="stat-dot" style="background:var(--accent)"></div>${active.length} active</div>
@@ -1236,27 +1353,38 @@ function renderTodayHero() {
 
 function renderWeekPills() {
   const todayIdx = new Date().getDay();
-  let html = '<div class="week-summary">';
+  const selectedDayName = state.selectedDay || getTodayName();
+  let html = '<div class="week-nav-container">';
+  html += `<button class="week-nav-btn" onclick="previousDay()">${ICONS.leftArrow}</button>`;
+  html += '<div class="week-summary">';
   for (let i = 0; i <= 6; i++) {
     const dayName = DAY_NAMES[i];
     const short = DAY_SHORT[i];
     const dayTasks = state.tasks.filter(t => t.day === dayName && t.status !== 'Completed');
     const isToday = i === todayIdx;
-    const cls = `week-day-pill${isToday ? ' today' : ''}${dayTasks.length > 0 ? ' has-tasks' : ''}`;
-    html += `<div class="${cls}"><span class="pill-count">${dayTasks.length}</span>${short}</div>`;
+    const isSelected = dayName === selectedDayName;
+    const cls = `week-day-pill${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}${dayTasks.length > 0 ? ' has-tasks' : ''}`;
+    html += `<div class="${cls}" onclick="selectDay('${dayName}')"><span class="pill-count">${dayTasks.length}</span>${short}</div>`;
   }
+  html += '</div>';
+  html += `<button class="week-nav-btn" onclick="nextDay()">${ICONS.rightArrow}</button>`;
   html += '</div>';
   return html;
 }
 
 function renderTodayTasks() {
-  const tasks = getTodayTasks();
-  let html = '<div class="section"><div class="section-title">Today</div><div class="task-list">';
+  const selectedDayName = state.selectedDay || getTodayName();
+  const selectedDayTasks = state.tasks.filter(t => t.day === selectedDayName);
+  let html = '<div class="section"><div class="task-list">';
 
-  if (tasks.length === 0) {
-    html += `<div class="empty-state"><p>No tasks for today.<br>Add a task or plan your week!</p></div>`;
+  if (selectedDayTasks.length === 0) {
+    html += `<div class="empty-state"><p>No tasks for ${selectedDayName}.<br>Add a task or plan your week!</p></div>`;
   } else {
-    tasks.forEach((t, i) => {
+    selectedDayTasks.sort((a, b) => {
+      if (a.status === 'Completed' && b.status !== 'Completed') return 1;
+      if (b.status === 'Completed' && a.status !== 'Completed') return -1;
+      return 0;
+    }).forEach((t) => {
       const idx = state.tasks.indexOf(t);
       html += renderTaskCard(t, idx);
     });
@@ -1266,28 +1394,10 @@ function renderTodayTasks() {
 }
 
 function renderWeekView() {
-  const weekDays = getWeekTasks();
+  // Unassigned tasks only
+  const unassigned = state.tasks.filter(t => !t.day && t.status !== 'Completed');
   let html = '';
 
-  weekDays.forEach(day => {
-    if (day.tasks.length === 0) return;
-    const totalMin = getTotalMinutes(day.tasks.filter(t => t.status !== 'Completed'));
-    html += `<div class="day-section">
-      <div class="day-header"><h3>${day.name}</h3><span class="day-info">${day.tasks.length} tasks &middot; ${formatMinutes(totalMin)}</span></div>
-      <div class="day-tasks">`;
-    day.tasks.sort((a, b) => {
-      if (a.status === 'Completed' && b.status !== 'Completed') return 1;
-      if (b.status === 'Completed' && a.status !== 'Completed') return -1;
-      return 0;
-    }).forEach(t => {
-      const idx = state.tasks.indexOf(t);
-      html += renderTaskCard(t, idx);
-    });
-    html += '</div></div>';
-  });
-
-  // Unassigned tasks
-  const unassigned = state.tasks.filter(t => !t.day && t.status !== 'Completed');
   if (unassigned.length > 0) {
     html += `<div class="day-section">
       <div class="day-header"><h3>Unassigned</h3><span class="day-info">${unassigned.length} tasks</span></div>
@@ -1305,8 +1415,9 @@ function renderWeekView() {
 function renderTaskCard(t, idx) {
   const isCompleted = t.status === 'Completed';
   const cc = catClass(t.category);
-  return `<div class="task-card${isCompleted ? ' completed' : ''}" data-idx="${idx}">
-    <div class="task-checkbox${isCompleted ? ' checked' : ''}" onclick="toggleTask(${idx})">
+  const hasRecurrence = t.recurrence && t.recurrence !== 'None';
+  return `<div class="task-card${isCompleted ? ' completed' : ''}" data-idx="${idx}" onclick="editTask(${idx})">
+    <div class="task-checkbox${isCompleted ? ' checked' : ''}" onclick="event.stopPropagation(); toggleTask(${idx})">
       <svg viewBox="0 0 24 24"><polyline points="4 12 9 17 20 6"/></svg>
     </div>
     <div class="task-body">
@@ -1314,20 +1425,17 @@ function renderTaskCard(t, idx) {
       <div class="task-meta">
         <span class="task-badge badge-${cc}">${escHtml(t.category)}</span>
         <span class="task-time">${ICONS.clock} ${t.time}</span>
+        ${hasRecurrence ? `<span class="task-repeat">${ICONS.repeat}</span>` : ''}
         ${t.dependencies ? `<span class="task-dep">${ICONS.link} ${escHtml(t.dependencies)}</span>` : ''}
       </div>
-    </div>
-    <div class="task-actions">
-      <button class="task-action-btn" onclick="editTask(${idx})">${ICONS.edit}</button>
-      <button class="task-action-btn" onclick="deleteTask(${idx})">${ICONS.trash}</button>
     </div>
   </div>`;
 }
 
 function renderBottomNav() {
   return `<div class="bottom-nav">
-    <button class="btn btn-primary" onclick="openAddTask()">${ICONS.plus} Add Task</button>
-    <button class="btn btn-secondary" onclick="openPlanWeek()">${ICONS.calendar} Plan My Week</button>
+    <button class="fab" onclick="openAddTask()" title="Add Task">${ICONS.plus}</button>
+    <a href="javascript:openPlanWeek()" class="plan-week-link">Plan My Week</a>
   </div>`;
 }
 
@@ -1429,7 +1537,8 @@ function renderPlanComplete() {
 // ============================================
 function renderTaskModal() {
   const isEdit = state.view === 'edit-task';
-  const t = isEdit ? state.editTask : { name:'', time:'30min', category:'Business', priority:'This Week', dependencies:'', status:'Not Started', day: getTodayName() };
+  const t = isEdit ? state.editTask : { name:'', time:'30min', category:'Business', priority:'This Week', dependencies:'', status:'Not Started', day: getTodayName(), recurrence:'None' };
+  const RECURRENCE_OPTIONS = ['None', 'Daily', 'Weekdays', 'Weekly'];
 
   return `<div class="overlay" onclick="closePlanIfBg(event)">
     <div class="modal">
@@ -1465,6 +1574,12 @@ function renderTaskModal() {
           <label class="field-label">Assigned Day</label>
           <div class="chip-group" id="task-day">
             ${DAY_NAMES.map(d => `<div class="chip${t.day === d ? ' selected' : ''}" onclick="selectChip('task-day','${d}', this)">${DAY_SHORT[DAY_NAMES.indexOf(d)]}</div>`).join('')}
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Repeat</label>
+          <div class="chip-group" id="task-recurrence">
+            ${RECURRENCE_OPTIONS.map(r => `<div class="chip${(t.recurrence || 'None') === r ? ' selected' : ''}" onclick="selectChip('task-recurrence','${r}', this)">${r}</div>`).join('')}
           </div>
         </div>
         <div class="field">
@@ -1539,6 +1654,49 @@ async function toggleTask(idx) {
   } else {
     t.status = 'Completed';
     t.completedAt = new Date().toISOString();
+
+    // Handle recurring tasks: auto-create next occurrence
+    if (t.recurrence && t.recurrence !== 'None') {
+      const nextTask = { ...t };
+      nextTask.status = 'Not Started';
+      nextTask.completedAt = '';
+      nextTask.createdDate = new Date().toISOString();
+
+      const currentDate = new Date();
+      const currentDayIdx = currentDate.getDay();
+      const currentDayName = DAY_NAMES[currentDayIdx];
+
+      let nextDayName = currentDayName;
+
+      if (t.recurrence === 'Daily') {
+        // Next day
+        const nextDate = new Date(currentDate);
+        nextDate.setDate(nextDate.getDate() + 1);
+        nextDayName = DAY_NAMES[nextDate.getDay()];
+      } else if (t.recurrence === 'Weekdays') {
+        // Next weekday (skip Sat/Sun)
+        const nextDate = new Date(currentDate);
+        nextDate.setDate(nextDate.getDate() + 1);
+        let nextDayIdx = nextDate.getDay();
+        // Skip to Monday if Saturday or Sunday
+        if (nextDayIdx === 6) {
+          nextDate.setDate(nextDate.getDate() + 2); // Skip to Monday
+          nextDayIdx = 1;
+        } else if (nextDayIdx === 0) {
+          nextDate.setDate(nextDate.getDate() + 1); // Skip to Monday
+          nextDayIdx = 1;
+        }
+        nextDayName = DAY_NAMES[nextDayIdx];
+      } else if (t.recurrence === 'Weekly') {
+        // Same day next week
+        const nextDate = new Date(currentDate);
+        nextDate.setDate(nextDate.getDate() + 7);
+        nextDayName = DAY_NAMES[nextDate.getDay()];
+      }
+
+      nextTask.day = nextDayName;
+      state.tasks.push(nextTask);
+    }
   }
   render();
   await saveTasks();
@@ -1556,6 +1714,7 @@ async function saveTaskForm() {
     dependencies: document.getElementById('task-deps')?.value?.trim() || '',
     status: chipValues['task-status'] || 'Not Started',
     day: chipValues['task-day'] || getTodayName(),
+    recurrence: chipValues['task-recurrence'] || 'None',
     completedAt: '',
     createdDate: new Date().toISOString(),
   };
@@ -1565,10 +1724,11 @@ async function saveTaskForm() {
   }
 
   if (state.view === 'edit-task') {
-    // Preserve completion timestamp if still completed
+    // Preserve completion timestamp and createdDate if still completed
     if (task.status === 'Completed' && state.editTask.completedAt) {
       task.completedAt = state.editTask.completedAt;
     }
+    task.createdDate = state.editTask.createdDate;
     state.tasks[state.editIndex] = task;
     toast('Task updated');
   } else {
