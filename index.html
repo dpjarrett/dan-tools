@@ -725,6 +725,7 @@ const STATUS_OPTIONS = ['Not Started','In Progress','Completed'];
 
 const COLUMNS = ['Task','TimeEstimate','Category','Priority','Dependencies','Status','AssignedDay','CompletionTimestamp','CreatedDate'];
 const HOURS_PER_DAY = 8;
+const FIXED_SHEET_ID = '1qM_1TL4lolopaudTcgxwvQEy1Z9L6Lh1PC09H72VsXg';
 
 // ============================================
 // State
@@ -849,12 +850,13 @@ async function findOrCreateSheet() {
 }
 
 async function initSheet() {
-  // Try stored sheet
-  const stored = localStorage.getItem('wtp_sheet_id');
+  // Use fixed sheet ID so all devices share the same data
+  const stored = FIXED_SHEET_ID || localStorage.getItem('wtp_sheet_id');
   if (stored) {
     try {
       const resp = await gapi.client.sheets.spreadsheets.get({ spreadsheetId: stored });
       state.spreadsheetId = stored;
+      localStorage.setItem('wtp_sheet_id', stored);
       // Verify tabs exist
       const sheets = resp.result.sheets.map(s => s.properties.title);
       if (!sheets.includes('Tasks')) {
