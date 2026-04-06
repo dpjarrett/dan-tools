@@ -1020,6 +1020,16 @@ async function loadTasks() {
       createdDate: r[8] || '',
       recurrence: r[9] || 'None', // Backwards compatible: default to 'None'
     }));
+    // Repair any tasks saved with abbreviated day names (e.g. "Mon" -> "Monday")
+    let needsSave = false;
+    state.tasks.forEach(t => {
+      const shortIdx = DAY_SHORT.indexOf(t.day);
+      if (shortIdx !== -1) {
+        t.day = DAY_NAMES[shortIdx];
+        needsSave = true;
+      }
+    });
+    if (needsSave) await saveTasks();
   } catch(e) {
     console.error('Load error', e);
     state.tasks = [];
@@ -1573,7 +1583,7 @@ function renderTaskModal() {
         <div class="field">
           <label class="field-label">Assigned Day</label>
           <div class="chip-group" id="task-day">
-            ${DAY_NAMES.map(d => `<div class="chip${t.day === d ? ' selected' : ''}" onclick="selectChip('task-day','${d}', this)">${DAY_SHORT[DAY_NAMES.indexOf(d)]}</div>`).join('')}
+            ${DAY_NAMES.map(d => `<div class="chip${t.day === d ? ' selected' : ''}" data-value="${d}" onclick="selectChip('task-day','${d}', this)">${DAY_SHORT[DAY_NAMES.indexOf(d)]}</div>`).join('')}
           </div>
         </div>
         <div class="field">
@@ -1617,7 +1627,7 @@ function bindEvents() {
   // Re-initialize chip values from rendered state
   document.querySelectorAll('.chip-group').forEach(g => {
     const sel = g.querySelector('.chip.selected');
-    if (sel) chipValues[g.id] = sel.textContent.trim();
+    if (sel) chipValues[g.id] = sel.getAttribute('data-value') || sel.textContent.trim();
   });
 }
 
