@@ -63,11 +63,20 @@ body {
 
 /* App shell */
 #app {
-  max-width: 480px;
+  max-width: 720px;
   margin: 0 auto;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  padding: 0 16px;
+}
+
+@media (max-width: 480px) {
+  #app { padding: 0; max-width: 100%; }
+}
+
+@media (min-width: 900px) {
+  #app { max-width: 800px; }
 }
 
 /* Header */
@@ -297,6 +306,29 @@ body {
 .badge-bayside { background: rgba(20,184,166,0.15); color: var(--cat-bayside); }
 .badge-personal { background: rgba(34,197,94,0.15); color: var(--cat-personal); }
 .badge-other { background: rgba(100,116,139,0.15); color: var(--cat-other); }
+.badge-custom { background: rgba(139,92,246,0.15); color: #8b5cf6; }
+
+.priority-today { background: rgba(239,68,68,0.15); color: var(--danger); }
+.priority-week { background: rgba(245,158,11,0.15); color: var(--warning); }
+.priority-later { background: rgba(100,116,139,0.1); color: var(--text-muted); }
+
+.snooze-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  min-width: 32px;
+  min-height: 32px;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s ease;
+}
+.snooze-btn:active { background: var(--surface-raised); transform: scale(0.9); }
 
 .task-time {
   font-size: 12px;
@@ -808,6 +840,7 @@ const CAT_CLASSES = { Business:'business', Bayside:'bayside', Personal:'personal
 const TIME_OPTIONS = ['15min','30min','1hr','2hrs','4hrs','Full day'];
 const TIME_MINUTES = { '15min':15, '30min':30, '1hr':60, '2hrs':120, '4hrs':240, 'Full day':480 };
 const PRIORITY_OPTIONS = ['Today','This Week','Next Few Weeks'];
+const PRIORITY_RANK = { 'Today': 0, 'This Week': 1, 'Next Few Weeks': 2 };
 const STATUS_OPTIONS = ['Not Started','In Progress','Completed'];
 
 const COLUMNS = ['Task','TimeEstimate','Category','Priority','Dependencies','Status','AssignedDay','CompletionTimestamp','CreatedDate','Recurrence'];
@@ -822,7 +855,7 @@ let state = {
   loading: true,
   spreadsheetId: null,
   tasks: [],
-  view: 'main', // main, plan-paste, plan-triage, add-task, edit-task
+  view: 'main', // main, plan-paste, plan-triage, add-task, edit-task, settings
   planItems: [],
   planIndex: 0,
   planCurrent: {},
@@ -871,6 +904,7 @@ function gisLoaded() {
       render();
       await initSheet();
       await loadTasks();
+      await loadCategories();
       rolloverTasks();
       state.loading = false;
       render();
@@ -1033,6 +1067,49 @@ async function loadTasks() {
   } catch(e) {
     console.error('Load error', e);
     state.tasks = [];
+  }
+}
+
+async function loadCategories() {
+  try {
+    const resp = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: state.spreadsheetId, range: 'Settings!A2:B100'
+    });
+    const rows = resp.result.values || [];
+    const catRow = rows.find(r => r[0] === 'customCategories');
+    if (catRow && catRow[1]) {
+      state.customCategories = catRow[1].split(',').map(c => c.trim()).filter(Boolean);
+    }
+  } catch(e) {
+    console.error('Load categories error', e);
+  }
+}
+
+async function saveCategories() {
+  try {
+    // Read existing settings
+    const resp = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: state.spreadsheetId, range: 'Settings!A2:B100'
+    });
+    const rows = resp.result.values || [];
+    const catIdx = rows.findIndex(r => r[0] === 'customCategories');
+    const value = state.customCategories.join(',');
+    if (catIdx >= 0) {
+      const rowNum = catIdx + 2;
+      await gapi.client.sheets.spreadsheets.values.update({
+        spreadsheetId: state.spreadsheetId, range: `Settings!A${rowNum}:B${rowNum}`,
+        valueInputOption: 'RAW',
+        resource: { values: [['customCategories', value]] }
+      });
+    } else {
+      await gapi.client.sheets.spreadsheets.values.append({
+        spreadsheetId: state.spreadsheetId, range: 'Settings!A:B',
+        valueInputOption: 'RAW',
+        resource: { values: [['customCategories', value]] }
+      });
+    }
+  } catch(e) {
+    console.error('Save categories error', e);
   }
 }
 
@@ -1208,6 +1285,11 @@ function getTodayTasks() {
   return state.tasks.filter(t => taskAppliesOnDay(t, today)).sort((a, b) => {
     if (a.status === 'Completed' && b.status !== 'Completed') return 1;
     if (b.status === 'Completed' && a.status !== 'Completed') return -1;
+    const pa = PRIORITY_RANK[a.priority] ?? 2;
+    const pb = PRIORITY_RANK[b.priority] ?? 2;
+    if (pa !== pb) return pa - pb;
+    if (a.status === 'In Progress' && b.status !== 'In Progress') return -1;
+    if (b.status === 'In Progress' && a.status !== 'In Progress') return 1;
     return 0;
   });
 }
@@ -1251,7 +1333,13 @@ function formatDate() {
   return `${DAY_NAMES[d.getDay()]}, ${MONTH_NAMES[d.getMonth()]} ${d.getDate()}`;
 }
 
-function catClass(cat) { return CAT_CLASSES[cat] || 'other'; }
+const CUSTOM_CAT_COLORS = ['#8b5cf6','#ec4899','#f97316','#06b6d4','#84cc16','#a855f7'];
+function catClass(cat) { return CAT_CLASSES[cat] || 'custom'; }
+function customCatColor(cat) {
+  const idx = state.customCategories.indexOf(cat);
+  if (idx < 0) return CUSTOM_CAT_COLORS[0];
+  return CUSTOM_CAT_COLORS[idx % CUSTOM_CAT_COLORS.length];
+}
 
 function allCategories() {
   return [...CATEGORIES, ...state.customCategories];
@@ -1275,6 +1363,8 @@ const ICONS = {
   close: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
   leftArrow: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>',
   rightArrow: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>',
+  snooze: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3l14 0"/><path d="M5 3l8 8"/><path d="M13 11l6 0"/><path d="M13 11l5 5"/><path d="M18 16l-12 0"/><circle cx="12" cy="19" r="2"/></svg>',
+  settings: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
 };
 
 const APP_ICON = `<svg width="80" height="80" viewBox="0 0 80 80" fill="none">
@@ -1331,6 +1421,7 @@ function render() {
   if (state.view === 'plan-paste') html += renderPlanPasteModal();
   if (state.view === 'plan-triage') html += renderPlanTriageModal();
   if (state.view === 'add-task' || state.view === 'edit-task') html += renderTaskModal();
+  if (state.view === 'settings') html += renderSettingsModal();
 
   // Toast
   if (state.toastMsg) {
@@ -1355,6 +1446,7 @@ function renderHeader() {
     <h1>Planner</h1>
     <div class="header-actions">
       <button class="btn-icon" onclick="refreshData()" title="Refresh">${ICONS.refresh}</button>
+      <button class="btn-icon" onclick="openSettings()" title="Settings">${ICONS.settings}</button>
     </div>
   </div>`;
 }
@@ -1407,8 +1499,16 @@ function renderTodayTasks() {
     html += `<div class="empty-state"><p>No tasks for ${selectedDayName}.<br>Add a task or plan your week!</p></div>`;
   } else {
     selectedDayTasks.sort((a, b) => {
+      // Completed tasks sink to bottom
       if (a.status === 'Completed' && b.status !== 'Completed') return 1;
       if (b.status === 'Completed' && a.status !== 'Completed') return -1;
+      // Then sort by priority rank (Today first, then This Week, then Next Few Weeks)
+      const pa = PRIORITY_RANK[a.priority] ?? 2;
+      const pb = PRIORITY_RANK[b.priority] ?? 2;
+      if (pa !== pb) return pa - pb;
+      // Then In Progress before Not Started
+      if (a.status === 'In Progress' && b.status !== 'In Progress') return -1;
+      if (b.status === 'In Progress' && a.status !== 'In Progress') return 1;
       return 0;
     }).forEach((t) => {
       const idx = state.tasks.indexOf(t);
@@ -1442,6 +1542,7 @@ function renderTaskCard(t, idx) {
   const isCompleted = t.status === 'Completed';
   const cc = catClass(t.category);
   const hasRecurrence = t.recurrence && t.recurrence !== 'None';
+  const priorityClass = t.priority === 'Today' ? 'priority-today' : t.priority === 'This Week' ? 'priority-week' : 'priority-later';
   return `<div class="task-card${isCompleted ? ' completed' : ''}" data-idx="${idx}" onclick="editTask(${idx})">
     <div class="task-checkbox${isCompleted ? ' checked' : ''}" onclick="event.stopPropagation(); toggleTask(${idx})">
       <svg viewBox="0 0 24 24"><polyline points="4 12 9 17 20 6"/></svg>
@@ -1449,13 +1550,77 @@ function renderTaskCard(t, idx) {
     <div class="task-body">
       <div class="task-name">${escHtml(t.name)}</div>
       <div class="task-meta">
-        <span class="task-badge badge-${cc}">${escHtml(t.category)}</span>
+        <span class="task-badge badge-${cc}"${cc === 'custom' ? ` style="background:${customCatColor(t.category)}22;color:${customCatColor(t.category)}"` : ''}>${escHtml(t.category)}</span>
+        <span class="task-badge ${priorityClass}">${t.priority}</span>
         <span class="task-time">${ICONS.clock} ${t.time}</span>
         ${hasRecurrence ? `<span class="task-repeat">${ICONS.repeat}</span>` : ''}
         ${t.dependencies ? `<span class="task-dep">${ICONS.link} ${escHtml(t.dependencies)}</span>` : ''}
       </div>
     </div>
+    ${!isCompleted ? `<button class="snooze-btn" onclick="event.stopPropagation(); snoozeTask(${idx})" title="Snooze to tomorrow">${ICONS.snooze}</button>` : ''}
   </div>`;
+}
+
+function renderSettingsModal() {
+  const cats = allCategories();
+  return `<div class="overlay" onclick="if(event.target===this){closeModal()}">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <h2>Settings</h2>
+        <button class="btn-icon" onclick="closeModal()">${ICONS.close}</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label class="field-label">Categories</label>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            ${cats.map(cat => {
+              const isDefault = CATEGORIES.includes(cat);
+              return `<div style="display:flex;align-items:center;gap:8px">
+                <span class="task-badge badge-${catClass(cat)}" style="flex:1;text-align:left;padding:8px 12px;font-size:14px">${escHtml(cat)}</span>
+                ${!isDefault ? `<button class="btn-icon" style="color:var(--danger)" onclick="deleteCategory('${escHtml(cat)}')" title="Delete">${ICONS.trash}</button>` : '<span style="width:32px"></span>'}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+        <div class="field" style="margin-top:12px">
+          <label class="field-label">Add Category</label>
+          <div style="display:flex;gap:8px">
+            <input class="field-input" id="new-category-input" placeholder="New category name" style="flex:1">
+            <button class="btn btn-primary" style="padding:10px 16px" onclick="addCategory()">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openSettings() {
+  state.view = 'settings';
+  render();
+}
+
+async function addCategory() {
+  const input = document.getElementById('new-category-input');
+  const name = input?.value?.trim();
+  if (!name) { toast('Enter a category name'); return; }
+  const all = allCategories();
+  if (all.some(c => c.toLowerCase() === name.toLowerCase())) { toast('Category already exists'); return; }
+  state.customCategories.push(name);
+  await saveCategories();
+  toast(`Added "${name}"`);
+  render();
+}
+
+async function deleteCategory(name) {
+  if (CATEGORIES.includes(name)) { toast('Cannot delete default categories'); return; }
+  // Reassign tasks with this category to "Other"
+  state.tasks.forEach(t => { if (t.category === name) t.category = 'Other'; });
+  state.customCategories = state.customCategories.filter(c => c !== name);
+  await saveCategories();
+  await saveTasks();
+  toast(`Deleted "${name}"`);
+  render();
 }
 
 function renderBottomNav() {
@@ -1689,6 +1854,16 @@ async function toggleTask(idx) {
   await saveTasks();
 }
 
+async function snoozeTask(idx) {
+  const t = state.tasks[idx];
+  const currentDayIdx = DAY_NAMES.indexOf(t.day);
+  const nextDayIdx = currentDayIdx === 6 ? 0 : currentDayIdx + 1;
+  t.day = DAY_NAMES[nextDayIdx];
+  toast(`Snoozed to ${t.day}`);
+  render();
+  await saveTasks();
+}
+
 async function saveTaskForm() {
   const name = document.getElementById('task-name')?.value?.trim();
   if (!name) { toast('Please enter a task name'); return; }
@@ -1817,6 +1992,7 @@ async function refreshData() {
   state.loading = true;
   render();
   await loadTasks();
+  await loadCategories();
   rolloverTasks();
   state.loading = false;
   render();
