@@ -843,7 +843,7 @@ const PRIORITY_OPTIONS = ['Today','This Week','Next Few Weeks'];
 const PRIORITY_RANK = { 'Today': 0, 'This Week': 1, 'Next Few Weeks': 2 };
 const STATUS_OPTIONS = ['Not Started','In Progress','Completed'];
 
-const COLUMNS = ['Task','TimeEstimate','Category','Priority','Dependencies','Status','AssignedDay','CompletionTimestamp','CreatedDate','Recurrence'];
+const COLUMNS = ['Task','TimeEstimate','Category','Priority','Dependencies','Status','AssignedDay','CompletionTimestamp','CreatedDate','Recurrence','CompletedDays'];
 const HOURS_PER_DAY = 8;
 const FIXED_SHEET_ID = '1qM_1TL4lolopaudTcgxwvQEy1Z9L6Lh1PC09H72VsXg';
 
@@ -990,7 +990,7 @@ async function initSheet() {
           resource: { requests: [{ addSheet: { properties: { title: 'Tasks' } } }] }
         });
         await gapi.client.sheets.spreadsheets.values.update({
-          spreadsheetId: stored, range: 'Tasks!A1:J1',
+          spreadsheetId: stored, range: 'Tasks!A1:K1',
           valueInputOption: 'RAW',
           resource: { values: [COLUMNS] }
         });
@@ -1022,7 +1022,7 @@ async function initSheet() {
 
   // Add header row
   await gapi.client.sheets.spreadsheets.values.update({
-    spreadsheetId: state.spreadsheetId, range: 'Tasks!A1:J1',
+    spreadsheetId: state.spreadsheetId, range: 'Tasks!A1:K1',
     valueInputOption: 'RAW',
     resource: { values: [COLUMNS] }
   });
@@ -1038,7 +1038,7 @@ async function initSheet() {
 async function loadTasks() {
   try {
     const resp = await gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: state.spreadsheetId, range: 'Tasks!A2:J1000'
+      spreadsheetId: state.spreadsheetId, range: 'Tasks!A2:K1000'
     });
     const rows = resp.result.values || [];
     state.tasks = rows.map((r, i) => ({
@@ -1052,7 +1052,8 @@ async function loadTasks() {
       day: r[6] || '',
       completedAt: r[7] || '',
       createdDate: r[8] || '',
-      recurrence: r[9] || 'None', // Backwards compatible: default to 'None'
+      recurrence: r[9] || 'None',
+      completedDays: r[10] || '', // Comma-separated day names where recurring task is done
     }));
     // Repair any tasks saved with abbreviated day names (e.g. "Mon" -> "Monday")
     let needsSave = false;
@@ -1116,19 +1117,19 @@ async function saveCategories() {
 async function saveTasks(tasks) {
   if (!tasks) tasks = state.tasks;
   const values = tasks.map(t => [
-    t.name, t.time, t.category, t.priority, t.dependencies, t.status, t.day, t.completedAt, t.createdDate, t.recurrence || 'None'
+    t.name, t.time, t.category, t.priority, t.dependencies, t.status, t.day, t.completedAt, t.createdDate, t.recurrence || 'None', t.completedDays || ''
   ]);
   // Clear existing data and write all
   try {
     await gapi.client.sheets.spreadsheets.values.clear({
-      spreadsheetId: state.spreadsheetId, range: 'Tasks!A2:J1000'
+      spreadsheetId: state.spreadsheetId, range: 'Tasks!A2:K1000'
     });
   } catch(e) {}
 
   if (values.length > 0) {
     await gapi.client.sheets.spreadsheets.values.update({
       spreadsheetId: state.spreadsheetId,
-      range: `Tasks!A2:J${values.length + 1}`,
+      range: `Tasks!A2:K${values.length + 1}`,
       valueInputOption: 'RAW',
       resource: { values }
     });
@@ -1141,9 +1142,9 @@ async function appendTask(task) {
   task.row = state.tasks.length + 2;
   state.tasks.push(task);
   await gapi.client.sheets.spreadsheets.values.append({
-    spreadsheetId: state.spreadsheetId, range: 'Tasks!A:J',
+    spreadsheetId: state.spreadsheetId, range: 'Tasks!A:K',
     valueInputOption: 'RAW',
-    resource: { values: [[task.name, task.time, task.category, task.priority, task.dependencies, task.status, task.day, task.completedAt, task.createdDate, task.recurrence]] }
+    resource: { values: [[task.name, task.time, task.category, task.priority, task.dependencies, task.status, task.day, task.completedAt, task.createdDate, task.recurrence, task.completedDays || '']] }
   });
 }
 
@@ -1245,6 +1246,19 @@ function distributeTasksAcrossWeek(tasks) {
 // ============================================
 function getTodayName() { return DAY_NAMES[new Date().getDay()]; }
 
+function isRecurring(task) {
+  return task.recurrence && task.recurrence !== 'None';
+}
+
+function isTaskCompletedOnDay(task, dayName) {
+  if (!isRecurring(task)) {
+    return task.status === 'Completed';
+  }
+  // For recurring tasks, check completedDays
+  const days = (task.completedDays || '').split(',').map(d => d.trim()).filter(Boolean);
+  return days.includes(dayName);
+}
+
 function taskAppliesOnDay(task, dayName) {
   // Task directly assigned to this day
   if (task.day === dayName) return true;
@@ -1283,8 +1297,10 @@ function nextDay() {
 function getTodayTasks() {
   const today = getTodayName();
   return state.tasks.filter(t => taskAppliesOnDay(t, today)).sort((a, b) => {
-    if (a.status === 'Completed' && b.status !== 'Completed') return 1;
-    if (b.status === 'Completed' && a.status !== 'Completed') return -1;
+    const aDone = isTaskCompletedOnDay(a, today);
+    const bDone = isTaskCompletedOnDay(b, today);
+    if (aDone && !bDone) return 1;
+    if (bDone && !aDone) return -1;
     const pa = PRIORITY_RANK[a.priority] ?? 2;
     const pb = PRIORITY_RANK[b.priority] ?? 2;
     if (pa !== pb) return pa - pb;
@@ -1454,8 +1470,8 @@ function renderHeader() {
 function renderTodayHero() {
   const selectedDayName = state.selectedDay || getTodayName();
   const selectedDayTasks = state.tasks.filter(t => taskAppliesOnDay(t, selectedDayName));
-  const active = selectedDayTasks.filter(t => t.status !== 'Completed');
-  const done = selectedDayTasks.filter(t => t.status === 'Completed');
+  const active = selectedDayTasks.filter(t => !isTaskCompletedOnDay(t, selectedDayName));
+  const done = selectedDayTasks.filter(t => isTaskCompletedOnDay(t, selectedDayName));
   const totalMin = getTotalMinutes(active);
   const isToday = selectedDayName === getTodayName();
 
@@ -1478,7 +1494,7 @@ function renderWeekPills() {
   for (let i = 0; i <= 6; i++) {
     const dayName = DAY_NAMES[i];
     const short = DAY_SHORT[i];
-    const dayTasks = state.tasks.filter(t => taskAppliesOnDay(t, dayName) && t.status !== 'Completed');
+    const dayTasks = state.tasks.filter(t => taskAppliesOnDay(t, dayName) && !isTaskCompletedOnDay(t, dayName));
     const isToday = i === todayIdx;
     const isSelected = dayName === selectedDayName;
     const cls = `week-day-pill${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}${dayTasks.length > 0 ? ' has-tasks' : ''}`;
@@ -1500,8 +1516,10 @@ function renderTodayTasks() {
   } else {
     selectedDayTasks.sort((a, b) => {
       // Completed tasks sink to bottom
-      if (a.status === 'Completed' && b.status !== 'Completed') return 1;
-      if (b.status === 'Completed' && a.status !== 'Completed') return -1;
+      const aDone = isTaskCompletedOnDay(a, selectedDayName);
+      const bDone = isTaskCompletedOnDay(b, selectedDayName);
+      if (aDone && !bDone) return 1;
+      if (bDone && !aDone) return -1;
       // Then sort by priority rank (Today first, then This Week, then Next Few Weeks)
       const pa = PRIORITY_RANK[a.priority] ?? 2;
       const pb = PRIORITY_RANK[b.priority] ?? 2;
@@ -1512,7 +1530,7 @@ function renderTodayTasks() {
       return 0;
     }).forEach((t) => {
       const idx = state.tasks.indexOf(t);
-      html += renderTaskCard(t, idx);
+      html += renderTaskCard(t, idx, selectedDayName);
     });
   }
   html += '</div></div>';
@@ -1538,8 +1556,9 @@ function renderWeekView() {
   return html;
 }
 
-function renderTaskCard(t, idx) {
-  const isCompleted = t.status === 'Completed';
+function renderTaskCard(t, idx, forDay) {
+  const viewDay = forDay || state.selectedDay || getTodayName();
+  const isCompleted = isTaskCompletedOnDay(t, viewDay);
   const cc = catClass(t.category);
   const hasRecurrence = t.recurrence && t.recurrence !== 'None';
   const priorityClass = t.priority === 'Today' ? 'priority-today' : t.priority === 'This Week' ? 'priority-week' : 'priority-later';
@@ -1574,11 +1593,14 @@ function renderSettingsModal() {
         <div class="field">
           <label class="field-label">Categories</label>
           <div style="display:flex;flex-direction:column;gap:8px">
-            ${cats.map(cat => {
+            ${cats.map((cat, i) => {
               const isDefault = CATEGORIES.includes(cat);
-              return `<div style="display:flex;align-items:center;gap:8px">
-                <span class="task-badge badge-${catClass(cat)}" style="flex:1;text-align:left;padding:8px 12px;font-size:14px">${escHtml(cat)}</span>
-                ${!isDefault ? `<button class="btn-icon" style="color:var(--danger)" onclick="deleteCategory('${escHtml(cat)}')" title="Delete">${ICONS.trash}</button>` : '<span style="width:32px"></span>'}
+              return `<div class="cat-row" style="display:flex;align-items:center;gap:8px">
+                <span class="task-badge badge-${catClass(cat)}" style="flex:1;text-align:left;padding:8px 12px;font-size:14px" id="cat-label-${i}">${escHtml(cat)}</span>
+                <input class="field-input cat-edit-input" id="cat-edit-${i}" data-cat="${escHtml(cat)}" value="${escHtml(cat)}" style="flex:1;display:none;padding:8px 12px;font-size:14px">
+                <button class="btn-icon" onclick="startEditCategory(${i})" title="Edit" id="cat-edit-btn-${i}">${ICONS.edit}</button>
+                <button class="btn-icon" onclick="finishEditCategory(${i}, '${escHtml(cat)}')" title="Save" id="cat-save-btn-${i}" style="display:none;color:var(--success)">${ICONS.check ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="4 12 9 17 20 6"/></svg>' : 'Save'}</button>
+                ${!isDefault ? `<button class="btn-icon" style="color:var(--danger)" onclick="deleteCategory('${escHtml(cat)}')" title="Delete">${ICONS.trash}</button>` : ''}
               </div>`;
             }).join('')}
           </div>
@@ -1609,6 +1631,44 @@ async function addCategory() {
   state.customCategories.push(name);
   await saveCategories();
   toast(`Added "${name}"`);
+  render();
+}
+
+function startEditCategory(i) {
+  document.getElementById(`cat-label-${i}`).style.display = 'none';
+  document.getElementById(`cat-edit-${i}`).style.display = 'block';
+  document.getElementById(`cat-edit-btn-${i}`).style.display = 'none';
+  document.getElementById(`cat-save-btn-${i}`).style.display = 'inline-flex';
+  document.getElementById(`cat-edit-${i}`).focus();
+}
+
+async function finishEditCategory(i, oldName) {
+  const input = document.getElementById(`cat-edit-${i}`);
+  const newName = input?.value?.trim();
+  if (!newName || newName === oldName) {
+    state.view = 'settings'; render(); return;
+  }
+  const all = allCategories();
+  if (all.some(c => c.toLowerCase() === newName.toLowerCase() && c !== oldName)) {
+    toast('Category name already exists'); return;
+  }
+  // Rename in tasks
+  state.tasks.forEach(t => { if (t.category === oldName) t.category = newName; });
+  // Update in defaults or customs
+  const defaultIdx = CATEGORIES.indexOf(oldName);
+  if (defaultIdx >= 0) {
+    CATEGORIES[defaultIdx] = newName;
+    // Update CAT_CLASSES
+    const oldClass = CAT_CLASSES[oldName];
+    delete CAT_CLASSES[oldName];
+    CAT_CLASSES[newName] = oldClass;
+  } else {
+    const customIdx = state.customCategories.indexOf(oldName);
+    if (customIdx >= 0) state.customCategories[customIdx] = newName;
+  }
+  await saveCategories();
+  await saveTasks();
+  toast(`Renamed to "${newName}"`);
   render();
 }
 
@@ -1839,16 +1899,26 @@ async function deleteTask(idx) {
 
 async function toggleTask(idx) {
   const t = state.tasks[idx];
-  if (t.status === 'Completed') {
-    t.status = 'Not Started';
-    t.completedAt = '';
-  } else {
-    t.status = 'Completed';
-    t.completedAt = new Date().toISOString();
+  const viewDay = state.selectedDay || getTodayName();
 
-    // Recurring tasks (Daily/Weekdays) already show on all applicable days via taskAppliesOnDay().
-    // For Weekly recurrence, the task stays on the same day, so no duplication needed.
-    // Completing a recurring task just marks it done — unchecking resets it.
+  if (isRecurring(t)) {
+    // Per-day completion for recurring tasks
+    let days = (t.completedDays || '').split(',').map(d => d.trim()).filter(Boolean);
+    if (days.includes(viewDay)) {
+      days = days.filter(d => d !== viewDay);
+    } else {
+      days.push(viewDay);
+    }
+    t.completedDays = days.join(',');
+  } else {
+    // Non-recurring: normal toggle
+    if (t.status === 'Completed') {
+      t.status = 'Not Started';
+      t.completedAt = '';
+    } else {
+      t.status = 'Completed';
+      t.completedAt = new Date().toISOString();
+    }
   }
   render();
   await saveTasks();
@@ -1878,6 +1948,7 @@ async function saveTaskForm() {
     day: chipValues['task-day'] || getTodayName(),
     recurrence: chipValues['task-recurrence'] || 'None',
     completedAt: '',
+    completedDays: '',
     createdDate: new Date().toISOString(),
   };
 
@@ -1891,6 +1962,7 @@ async function saveTaskForm() {
       task.completedAt = state.editTask.completedAt;
     }
     task.createdDate = state.editTask.createdDate;
+    task.completedDays = state.editTask.completedDays || '';
     state.tasks[state.editIndex] = task;
     toast('Task updated');
   } else {
