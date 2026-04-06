@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f172a">
+<title>Weekly Task Planner</title>
+<link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIldlZWtseSBUYXNrIFBsYW5uZXIiLAogICJzaG9ydF9uYW1lIjogIlBsYW5uZXIiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBmMTcyYSIsCiAgInRoZW1lX2NvbG9yIjogIiMwZjE3MmEiLAogICJpY29ucyI6IFtdCn0=">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-raised: #273449;
+  --border: #334155;
+  --text: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent: #3b82f6;
+  --accent-dim: #1e3a5f;
+  --cat-business: #3b82f6;
+  --cat-bayside: #14b8a6;
+  --cat-personal: #22c55e;
+  --cat-other: #64748b;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --success: #22c55e;
+  --radius: 12px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+body {
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 0; height: 0; }
+
+/* Animations */
+@keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0.4; transform: translateY(8px); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+@keyframes checkmark { from { stroke-dashoffset: 24; } to { stroke-dashoffset: 0; } }
+@keyframes rolloverSlide { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+
+.animate-in { animation: slideIn 0.3s ease-out forwards; }
+.animate-fade { animation: fadeIn 0.25s ease-out; }
+
+/* App shell */
+#app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.app-header h1 {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.header-actions { display: flex; gap: 8px; }
+
+/* Buttons */
+.btn {
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:active { transform: scale(0.96); }
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  padding: 8px 14px;
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text);
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 8px;
+}
+
+.btn-sm { padding: 6px 10px; font-size: 13px; }
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-icon:active { transform: scale(0.92); }
+
+/* Main content */
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 100px;
+}
+
+/* Sections */
+.section { padding: 16px; }
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+/* Today hero */
+.today-hero {
+  padding: 20px 16px 8px;
+}
+
+.today-date {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 2px;
+}
+
+.today-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.today-stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.stat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* Task card */
+.task-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: all 0.3s ease;
+  animation: slideIn 0.3s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.task-card.completed {
+  opacity: 0.5;
+  order: 999;
+}
+
+.task-card.completed .task-name {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.task-card.completing {
+  animation: slideOut 0.4s ease-out forwards;
+}
+
+.task-checkbox {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 1px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.task-checkbox:active { transform: scale(0.85); }
+.task-checkbox.checked {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.task-checkbox svg {
+  width: 14px;
+  height: 14px;
+  stroke: white;
+  stroke-width: 3;
+  fill: none;
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+}
+
+.task-checkbox.checked svg {
+  animation: checkmark 0.3s ease-out 0.1s forwards;
+}
+
+.task-body { flex: 1; min-width: 0; }
+
+.task-name {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: 6px;
+  word-break: break-word;
+}
+
+.task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.task-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.badge-business { background: rgba(59,130,246,0.15); color: var(--cat-business); }
+.badge-bayside { background: rgba(20,184,166,0.15); color: var(--cat-bayside); }
+.badge-personal { background: rgba(34,197,94,0.15); color: var(--cat-personal); }
+.badge-other { background: rgba(100,116,139,0.15); color: var(--cat-other); }
+
+.task-time {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.task-dep {
+  font-size: 11px;
+  color: var(--warning);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.task-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.task-action-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.task-action-btn:active { background: var(--surface-raised); }
+
+/* Day section */
+.day-section {
+  margin-bottom: 4px;
+}
+
+.day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.day-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.day-header .day-info {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.day-tasks { padding: 0 16px; }
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state svg { margin-bottom: 12px; opacity: 0.4; }
+.empty-state p { font-size: 14px; line-height: 1.5; }
+
+/* Notification toast */
+.toast {
+  position: fixed;
+  top: calc(var(--safe-top) + 60px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  z-index: 200;
+  animation: slideIn 0.3s ease-out;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  max-width: 90%;
+  text-align: center;
+}
+
+.toast.hide { animation: slideOut 0.3s ease-out forwards; }
+
+/* Modals / overlays */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 300;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out;
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  background: var(--bg);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideIn 0.3s ease-out;
+  padding-bottom: calc(var(--safe-bottom) + 20px);
+}
+
+.modal-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 10px auto 0;
+}
+
+.modal-header {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.modal-body { padding: 20px; }
+
+/* Form fields */
+.field { margin-bottom: 16px; }
+.field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.field-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 15px;
+  color: var(--text);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.field-input:focus { border-color: var(--accent); }
+
+textarea.field-input { resize: vertical; min-height: 80px; }
+
+/* Chip select */
+.chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.chip {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chip:active { transform: scale(0.95); }
+.chip.selected {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.chip.cat-business.selected { background: rgba(59,130,246,0.15); border-color: var(--cat-business); color: var(--cat-business); }
+.chip.cat-bayside.selected { background: rgba(20,184,166,0.15); border-color: var(--cat-bayside); color: var(--cat-bayside); }
+.chip.cat-personal.selected { background: rgba(34,197,94,0.15); border-color: var(--cat-personal); color: var(--cat-personal); }
+.chip.cat-other.selected { background: rgba(100,116,139,0.15); border-color: var(--cat-other); color: var(--cat-other); }
+
+/* Planning flow */
+.plan-progress {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.plan-progress-bar {
+  height: 4px;
+  background: var(--surface);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.plan-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.plan-progress-text {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.plan-item-name {
+  font-size: 18px;
+  font-weight: 700;
+  padding: 20px 20px 16px;
+  line-height: 1.3;
+}
+
+.plan-question {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+
+/* Bottom nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  padding: 8px 16px calc(var(--safe-bottom) + 8px);
+  display: flex;
+  gap: 8px;
+  z-index: 50;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.bottom-nav .btn { flex: 1; justify-content: center; padding: 12px; }
+
+/* Week summary bar */
+.week-summary {
+  display: flex;
+  gap: 4px;
+  padding: 0 16px 8px;
+}
+
+.week-day-pill {
+  flex: 1;
+  text-align: center;
+  padding: 6px 2px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--surface);
+  color: var(--text-muted);
+  border: 1px solid transparent;
+}
+
+.week-day-pill.today {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.week-day-pill.has-tasks { color: var(--text-secondary); }
+
+.week-day-pill .pill-count {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  margin-bottom: 1px;
+}
+
+/* Rollover notification */
+.rollover-banner {
+  margin: 0 16px 8px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--warning);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: rolloverSlide 0.4s ease-out;
+}
+
+/* Auth screen */
+.auth-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.auth-logo {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 24px;
+}
+
+.auth-screen h2 {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.auth-screen p {
+  color: var(--text-secondary);
+  font-size: 15px;
+  margin-bottom: 32px;
+  max-width: 280px;
+}
+
+.auth-screen .btn { padding: 14px 28px; font-size: 16px; border-radius: 12px; }
+
+/* Loading */
+.loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 40px auto;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Task list container for ordering */
+.task-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Edit/delete buttons on task */
+.task-card .delete-zone {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 70px;
+  background: var(--danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  transform: translateX(70px);
+  transition: transform 0.2s;
+}
+
+/* Status select */
+.status-select {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* Settings panel */
+.settings-section { padding: 16px; }
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ============================================
+// Weekly Task Planner — PWA + Google Sheets
+// ============================================
+
+const CLIENT_ID = '80439686719-sbus2kg78uj5s4s6b7ctvng0eii16fek.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
+const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
+
+// Day helpers
+const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DAY_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+const CATEGORIES = ['Business','Bayside','Personal','Other'];
+const CAT_CLASSES = { Business:'business', Bayside:'bayside', Personal:'personal', Other:'other' };
+const TIME_OPTIONS = ['15min','30min','1hr','2hrs','4hrs','Full day'];
+const TIME_MINUTES = { '15min':15, '30min':30, '1hr':60, '2hrs':120, '4hrs':240, 'Full day':480 };
+const PRIORITY_OPTIONS = ['Today','This Week','Next Few Weeks'];
+const STATUS_OPTIONS = ['Not Started','In Progress','Completed'];
+
+const COLUMNS = ['Task','TimeEstimate','Category','Priority','Dependencies','Status','AssignedDay','CompletionTimestamp','CreatedDate'];
+const HOURS_PER_DAY = 8;
+
+// ============================================
+// State
+// ============================================
+let state = {
+  authed: false,
+  loading: true,
+  spreadsheetId: null,
+  tasks: [],
+  view: 'main', // main, plan-paste, plan-triage, add-task, edit-task
+  planItems: [],
+  planIndex: 0,
+  planCurrent: {},
+  editTask: null,
+  editIndex: -1,
+  rolloverCount: 0,
+  customCategories: [],
+  toastMsg: '',
+  toastTimer: null,
+};
+
+let tokenClient;
+let gapiInited = false;
+let gisInited = false;
+
+// ============================================
+// Google API Init
+// ============================================
+function gapiLoaded() {
+  gapi.load('client', async () => {
+    await gapi.client.init({ discoveryDocs: [DISCOVERY_DOC] });
+    gapiInited = true;
+    maybeEnableAuth();
+  });
+}
+
+function gisLoaded() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: async (resp) => {
+      if (resp.error) return;
+      state.authed = true;
+      state.loading = true;
+      render();
+      await initSheet();
+      await loadTasks();
+      rolloverTasks();
+      state.loading = false;
+      render();
+    },
+  });
+  gisInited = true;
+  maybeEnableAuth();
+}
+
+function maybeEnableAuth() {
+  if (gapiInited && gisInited) {
+    state.loading = false;
+    render();
+  }
+}
+
+function handleAuth() {
+  tokenClient.requestAccessToken({ prompt: 'consent' });
+}
+
+// ============================================
+// Sheet operations
+// ============================================
+async function findOrCreateSheet() {
+  // Search for existing sheet
+  try {
+    const resp = await gapi.client.sheets.spreadsheets.get({ spreadsheetId: state.spreadsheetId });
+    return state.spreadsheetId;
+  } catch(e) {}
+
+  // Search Drive for the sheet by name (using sheets list would need drive scope, so we create)
+  const stored = localStorage.getItem('wtp_sheet_id');
+  if (stored) {
+    try {
+      await gapi.client.sheets.spreadsheets.get({ spreadsheetId: stored });
+      state.spreadsheetId = stored;
+      return stored;
+    } catch(e) {
+      localStorage.removeItem('wtp_sheet_id');
+    }
+  }
+  return null;
+}
+
+async function initSheet() {
+  // Try stored sheet
+  const stored = localStorage.getItem('wtp_sheet_id');
+  if (stored) {
+    try {
+      const resp = await gapi.client.sheets.spreadsheets.get({ spreadsheetId: stored });
+      state.spreadsheetId = stored;
+      // Verify tabs exist
+      const sheets = resp.result.sheets.map(s => s.properties.title);
+      if (!sheets.includes('Tasks')) {
+        await gapi.client.sheets.spreadsheets.batchUpdate({
+          spreadsheetId: stored,
+          resource: { requests: [{ addSheet: { properties: { title: 'Tasks' } } }] }
+        });
+        await gapi.client.sheets.spreadsheets.values.update({
+          spreadsheetId: stored, range: 'Tasks!A1:I1',
+          valueInputOption: 'RAW',
+          resource: { values: [COLUMNS] }
+        });
+      }
+      if (!sheets.includes('Settings')) {
+        await gapi.client.sheets.spreadsheets.batchUpdate({
+          spreadsheetId: stored,
+          resource: { requests: [{ addSheet: { properties: { title: 'Settings' } } }] }
+        });
+      }
+      return;
+    } catch(e) {
+      localStorage.removeItem('wtp_sheet_id');
+    }
+  }
+
+  // Create new sheet
+  const resp = await gapi.client.sheets.spreadsheets.create({
+    resource: {
+      properties: { title: 'Weekly Task Planner' },
+      sheets: [
+        { properties: { title: 'Tasks' } },
+        { properties: { title: 'Settings' } }
+      ]
+    }
+  });
+  state.spreadsheetId = resp.result.spreadsheetId;
+  localStorage.setItem('wtp_sheet_id', state.spreadsheetId);
+
+  // Add header row
+  await gapi.client.sheets.spreadsheets.values.update({
+    spreadsheetId: state.spreadsheetId, range: 'Tasks!A1:I1',
+    valueInputOption: 'RAW',
+    resource: { values: [COLUMNS] }
+  });
+
+  // Add settings headers
+  await gapi.client.sheets.spreadsheets.values.update({
+    spreadsheetId: state.spreadsheetId, range: 'Settings!A1:B1',
+    valueInputOption: 'RAW',
+    resource: { values: [['Key','Value']] }
+  });
+}
+
+async function loadTasks() {
+  try {
+    const resp = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: state.spreadsheetId, range: 'Tasks!A2:I1000'
+    });
+    const rows = resp.result.values || [];
+    state.tasks = rows.map((r, i) => ({
+      row: i + 2,
+      name: r[0] || '',
+      time: r[1] || '30min',
+      category: r[2] || 'Other',
+      priority: r[3] || 'This Week',
+      dependencies: r[4] || '',
+      status: r[5] || 'Not Started',
+      day: r[6] || '',
+      completedAt: r[7] || '',
+      createdDate: r[8] || '',
+    }));
+  } catch(e) {
+    console.error('Load error', e);
+    state.tasks = [];
+  }
+}
+
+async function saveTasks(tasks) {
+  if (!tasks) tasks = state.tasks;
+  const values = tasks.map(t => [
+    t.name, t.time, t.category, t.priority, t.dependencies, t.status, t.day, t.completedAt, t.createdDate
+  ]);
+  // Clear existing data and write all
+  try {
+    await gapi.client.sheets.spreadsheets.values.clear({
+      spreadsheetId: state.spreadsheetId, range: 'Tasks!A2:I1000'
+    });
+  } catch(e) {}
+
+  if (values.length > 0) {
+    await gapi.client.sheets.spreadsheets.values.update({
+      spreadsheetId: state.spreadsheetId,
+      range: `Tasks!A2:I${values.length + 1}`,
+      valueInputOption: 'RAW',
+      resource: { values }
+    });
+  }
+}
+
+async function appendTask(task) {
+  task.createdDate = new Date().toISOString();
+  task.row = state.tasks.length + 2;
+  state.tasks.push(task);
+  await gapi.client.sheets.spreadsheets.values.append({
+    spreadsheetId: state.spreadsheetId, range: 'Tasks!A:I',
+    valueInputOption: 'RAW',
+    resource: { values: [[task.name, task.time, task.category, task.priority, task.dependencies, task.status, task.day, task.completedAt, task.createdDate]] }
+  });
+}
+
+// ============================================
+// Rollover logic
+// ============================================
+function rolloverTasks() {
+  const today = new Date();
+  const todayDay = DAY_NAMES[today.getDay()];
+  const todayIdx = today.getDay();
+  let rolled = 0;
+
+  state.tasks.forEach(t => {
+    if (t.status === 'Completed') return;
+    if (!t.day) return;
+    const taskDayIdx = DAY_NAMES.indexOf(t.day);
+    if (taskDayIdx === -1) return;
+
+    // If task's assigned day is before today (in the current week context)
+    // Simple check: if the day index is less than today and it's not completed
+    if (taskDayIdx < todayIdx && t.day !== todayDay) {
+      t.day = todayDay;
+      if (t.priority !== 'Today') t.priority = 'Today';
+      rolled++;
+    }
+  });
+
+  if (rolled > 0) {
+    state.rolloverCount = rolled;
+    saveTasks();
+  }
+}
+
+// ============================================
+// Task distribution algorithm
+// ============================================
+function distributeTasksAcrossWeek(tasks) {
+  const today = new Date();
+  const todayIdx = today.getDay();
+  // Remaining days of the week (including today)
+  const remainingDays = [];
+  for (let i = todayIdx; i <= 6; i++) {
+    remainingDays.push(DAY_NAMES[i]);
+  }
+  if (remainingDays.length === 0) remainingDays.push(DAY_NAMES[todayIdx]);
+
+  // Sort by priority
+  const priorityOrder = { 'Today': 0, 'This Week': 1, 'Next Few Weeks': 2 };
+  const sorted = [...tasks].sort((a, b) => (priorityOrder[a.priority] || 2) - (priorityOrder[b.priority] || 2));
+
+  // Track minutes per day
+  const dayMinutes = {};
+  remainingDays.forEach(d => dayMinutes[d] = 0);
+
+  // Also count existing tasks
+  state.tasks.forEach(t => {
+    if (t.status !== 'Completed' && dayMinutes[t.day] !== undefined) {
+      dayMinutes[t.day] += TIME_MINUTES[t.time] || 30;
+    }
+  });
+
+  const maxMin = HOURS_PER_DAY * 60;
+
+  sorted.forEach(t => {
+    const mins = TIME_MINUTES[t.time] || 30;
+
+    if (t.priority === 'Today') {
+      t.day = remainingDays[0];
+      dayMinutes[remainingDays[0]] += mins;
+      return;
+    }
+
+    if (t.priority === 'Next Few Weeks') {
+      // Assign to last available day
+      const day = remainingDays[remainingDays.length - 1];
+      t.day = day;
+      dayMinutes[day] += mins;
+      return;
+    }
+
+    // This Week — find least loaded day
+    let bestDay = remainingDays[0];
+    let bestLoad = Infinity;
+    for (const d of remainingDays) {
+      if (dayMinutes[d] < bestLoad) {
+        bestLoad = dayMinutes[d];
+        bestDay = d;
+      }
+    }
+    t.day = bestDay;
+    dayMinutes[bestDay] += mins;
+  });
+
+  return sorted;
+}
+
+// ============================================
+// Helpers
+// ============================================
+function getTodayName() { return DAY_NAMES[new Date().getDay()]; }
+
+function getTodayTasks() {
+  const today = getTodayName();
+  return state.tasks.filter(t => t.day === today).sort((a, b) => {
+    if (a.status === 'Completed' && b.status !== 'Completed') return 1;
+    if (b.status === 'Completed' && a.status !== 'Completed') return -1;
+    return 0;
+  });
+}
+
+function getWeekTasks() {
+  const todayIdx = new Date().getDay();
+  const days = [];
+  for (let i = todayIdx + 1; i <= 6; i++) {
+    const dayName = DAY_NAMES[i];
+    const tasks = state.tasks.filter(t => t.day === dayName);
+    if (tasks.length > 0 || i <= 6) {
+      days.push({ name: dayName, short: DAY_SHORT[i], tasks });
+    }
+  }
+  return days;
+}
+
+function getTotalMinutes(tasks) {
+  return tasks.reduce((sum, t) => sum + (TIME_MINUTES[t.time] || 30), 0);
+}
+
+function formatMinutes(m) {
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  const rm = m % 60;
+  return rm ? `${h}h ${rm}m` : `${h}h`;
+}
+
+function toast(msg, duration = 3000) {
+  state.toastMsg = msg;
+  render();
+  clearTimeout(state.toastTimer);
+  state.toastTimer = setTimeout(() => {
+    state.toastMsg = '';
+    render();
+  }, duration);
+}
+
+function formatDate() {
+  const d = new Date();
+  return `${DAY_NAMES[d.getDay()]}, ${MONTH_NAMES[d.getMonth()]} ${d.getDate()}`;
+}
+
+function catClass(cat) { return CAT_CLASSES[cat] || 'other'; }
+
+function allCategories() {
+  return [...CATEGORIES, ...state.customCategories];
+}
+
+// ============================================
+// SVG Icons
+// ============================================
+const ICONS = {
+  plus: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  calendar: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  check: '<polyline points="4 12 9 17 20 6"/>',
+  clock: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  link: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+  edit: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+  trash: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  arrow: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>',
+  warning: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  refresh: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>',
+  close: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+};
+
+const APP_ICON = `<svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+  <rect width="80" height="80" rx="18" fill="#1e293b"/>
+  <rect x="4" y="4" width="72" height="72" rx="15" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+  <rect x="18" y="22" width="24" height="3" rx="1.5" fill="#3b82f6"/>
+  <rect x="18" y="30" width="32" height="3" rx="1.5" fill="#3b82f6" opacity="0.5"/>
+  <rect x="18" y="40" width="20" height="3" rx="1.5" fill="#14b8a6"/>
+  <rect x="18" y="48" width="28" height="3" rx="1.5" fill="#14b8a6" opacity="0.5"/>
+  <rect x="18" y="58" width="16" height="3" rx="1.5" fill="#22c55e"/>
+  <circle cx="56" cy="52" r="12" fill="#3b82f6" opacity="0.15"/>
+  <polyline points="50,52 54,56 62,48" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+</svg>`;
+
+// ============================================
+// Render engine
+// ============================================
+function render() {
+  const app = document.getElementById('app');
+
+  if (!gapiInited || !gisInited) {
+    app.innerHTML = `<div class="auth-screen"><div class="loading-spinner"></div><p>Loading...</p></div>`;
+    return;
+  }
+
+  if (!state.authed) {
+    app.innerHTML = renderAuthScreen();
+    return;
+  }
+
+  if (state.loading) {
+    app.innerHTML = `<div class="auth-screen"><div class="loading-spinner"></div><p style="margin-top:8px">Loading your tasks...</p></div>`;
+    return;
+  }
+
+  let html = '';
+  html += renderHeader();
+  html += '<div class="main-content">';
+
+  if (state.view === 'main') {
+    html += renderTodayHero();
+    html += renderWeekPills();
+    if (state.rolloverCount > 0) {
+      html += `<div class="rollover-banner">${ICONS.warning} ${state.rolloverCount} task${state.rolloverCount > 1 ? 's' : ''} rolled forward from earlier this week</div>`;
+    }
+    html += renderTodayTasks();
+    html += renderWeekView();
+  }
+
+  html += '</div>';
+  html += renderBottomNav();
+
+  // Overlays
+  if (state.view === 'plan-paste') html += renderPlanPasteModal();
+  if (state.view === 'plan-triage') html += renderPlanTriageModal();
+  if (state.view === 'add-task' || state.view === 'edit-task') html += renderTaskModal();
+
+  // Toast
+  if (state.toastMsg) {
+    html += `<div class="toast">${state.toastMsg}</div>`;
+  }
+
+  app.innerHTML = html;
+  bindEvents();
+}
+
+function renderAuthScreen() {
+  return `<div class="auth-screen">
+    ${APP_ICON}
+    <h2>Weekly Task Planner</h2>
+    <p>Plan your week, stay organized, and get things done. Backed by Google Sheets.</p>
+    <button class="btn btn-primary" onclick="handleAuth()">${ICONS.calendar} Sign in with Google</button>
+  </div>`;
+}
+
+function renderHeader() {
+  return `<div class="app-header">
+    <h1>Planner</h1>
+    <div class="header-actions">
+      <button class="btn-icon" onclick="refreshData()" title="Refresh">${ICONS.refresh}</button>
+    </div>
+  </div>`;
+}
+
+function renderTodayHero() {
+  const todayTasks = getTodayTasks();
+  const active = todayTasks.filter(t => t.status !== 'Completed');
+  const done = todayTasks.filter(t => t.status === 'Completed');
+  const totalMin = getTotalMinutes(active);
+
+  return `<div class="today-hero">
+    <div class="today-date">${formatDate()}</div>
+    <div class="today-subtitle">${active.length} task${active.length !== 1 ? 's' : ''} remaining &middot; ${formatMinutes(totalMin)} of work</div>
+    <div class="today-stats">
+      <div class="stat"><div class="stat-dot" style="background:var(--accent)"></div>${active.length} active</div>
+      <div class="stat"><div class="stat-dot" style="background:var(--success)"></div>${done.length} done</div>
+    </div>
+  </div>`;
+}
+
+function renderWeekPills() {
+  const todayIdx = new Date().getDay();
+  let html = '<div class="week-summary">';
+  for (let i = 0; i <= 6; i++) {
+    const dayName = DAY_NAMES[i];
+    const short = DAY_SHORT[i];
+    const dayTasks = state.tasks.filter(t => t.day === dayName && t.status !== 'Completed');
+    const isToday = i === todayIdx;
+    const cls = `week-day-pill${isToday ? ' today' : ''}${dayTasks.length > 0 ? ' has-tasks' : ''}`;
+    html += `<div class="${cls}"><span class="pill-count">${dayTasks.length}</span>${short}</div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderTodayTasks() {
+  const tasks = getTodayTasks();
+  let html = '<div class="section"><div class="section-title">Today</div><div class="task-list">';
+
+  if (tasks.length === 0) {
+    html += `<div class="empty-state"><p>No tasks for today.<br>Add a task or plan your week!</p></div>`;
+  } else {
+    tasks.forEach((t, i) => {
+      const idx = state.tasks.indexOf(t);
+      html += renderTaskCard(t, idx);
+    });
+  }
+  html += '</div></div>';
+  return html;
+}
+
+function renderWeekView() {
+  const weekDays = getWeekTasks();
+  let html = '';
+
+  weekDays.forEach(day => {
+    if (day.tasks.length === 0) return;
+    const totalMin = getTotalMinutes(day.tasks.filter(t => t.status !== 'Completed'));
+    html += `<div class="day-section">
+      <div class="day-header"><h3>${day.name}</h3><span class="day-info">${day.tasks.length} tasks &middot; ${formatMinutes(totalMin)}</span></div>
+      <div class="day-tasks">`;
+    day.tasks.sort((a, b) => {
+      if (a.status === 'Completed' && b.status !== 'Completed') return 1;
+      if (b.status === 'Completed' && a.status !== 'Completed') return -1;
+      return 0;
+    }).forEach(t => {
+      const idx = state.tasks.indexOf(t);
+      html += renderTaskCard(t, idx);
+    });
+    html += '</div></div>';
+  });
+
+  // Unassigned tasks
+  const unassigned = state.tasks.filter(t => !t.day && t.status !== 'Completed');
+  if (unassigned.length > 0) {
+    html += `<div class="day-section">
+      <div class="day-header"><h3>Unassigned</h3><span class="day-info">${unassigned.length} tasks</span></div>
+      <div class="day-tasks">`;
+    unassigned.forEach(t => {
+      const idx = state.tasks.indexOf(t);
+      html += renderTaskCard(t, idx);
+    });
+    html += '</div></div>';
+  }
+
+  return html;
+}
+
+function renderTaskCard(t, idx) {
+  const isCompleted = t.status === 'Completed';
+  const cc = catClass(t.category);
+  return `<div class="task-card${isCompleted ? ' completed' : ''}" data-idx="${idx}">
+    <div class="task-checkbox${isCompleted ? ' checked' : ''}" onclick="toggleTask(${idx})">
+      <svg viewBox="0 0 24 24"><polyline points="4 12 9 17 20 6"/></svg>
+    </div>
+    <div class="task-body">
+      <div class="task-name">${escHtml(t.name)}</div>
+      <div class="task-meta">
+        <span class="task-badge badge-${cc}">${escHtml(t.category)}</span>
+        <span class="task-time">${ICONS.clock} ${t.time}</span>
+        ${t.dependencies ? `<span class="task-dep">${ICONS.link} ${escHtml(t.dependencies)}</span>` : ''}
+      </div>
+    </div>
+    <div class="task-actions">
+      <button class="task-action-btn" onclick="editTask(${idx})">${ICONS.edit}</button>
+      <button class="task-action-btn" onclick="deleteTask(${idx})">${ICONS.trash}</button>
+    </div>
+  </div>`;
+}
+
+function renderBottomNav() {
+  return `<div class="bottom-nav">
+    <button class="btn btn-primary" onclick="openAddTask()">${ICONS.plus} Add Task</button>
+    <button class="btn btn-secondary" onclick="openPlanWeek()">${ICONS.calendar} Plan My Week</button>
+  </div>`;
+}
+
+// ============================================
+// Plan Week Modal — Paste
+// ============================================
+function renderPlanPasteModal() {
+  return `<div class="overlay" onclick="closePlanIfBg(event)">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <h2>Plan My Week</h2>
+        <button class="btn-icon" onclick="closeModal()">${ICONS.close}</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label class="field-label">Paste your to-do list from Notes</label>
+          <textarea class="field-input" id="plan-input" rows="8" placeholder="- Buy groceries&#10;- Finish quarterly report&#10;- Call the plumber&#10;- Review design mockups"></textarea>
+        </div>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Each line becomes a task. Blank lines and dashes/bullets are cleaned up automatically.</p>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px" onclick="startTriage()">Start Triaging</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================
+// Plan Week Modal — Triage
+// ============================================
+function renderPlanTriageModal() {
+  if (state.planIndex >= state.planItems.length) {
+    return renderPlanComplete();
+  }
+
+  const item = state.planItems[state.planIndex];
+  const c = state.planCurrent;
+  const progress = ((state.planIndex) / state.planItems.length) * 100;
+
+  return `<div class="overlay">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="plan-progress">
+        <div class="plan-progress-bar"><div class="plan-progress-fill" style="width:${progress}%"></div></div>
+        <div class="plan-progress-text">Task ${state.planIndex + 1} of ${state.planItems.length}</div>
+      </div>
+      <div class="plan-item-name">${escHtml(item)}</div>
+      <div class="modal-body">
+        <div class="field">
+          <div class="plan-question">How long will this take?</div>
+          <div class="chip-group">
+            ${TIME_OPTIONS.map(t => `<div class="chip${c.time === t ? ' selected' : ''}" onclick="setPlan('time','${t}')">${t}</div>`).join('')}
+          </div>
+        </div>
+        <div class="field">
+          <div class="plan-question">What's it for?</div>
+          <div class="chip-group">
+            ${allCategories().map(cat => `<div class="chip cat-${catClass(cat)}${c.category === cat ? ' selected' : ''}" onclick="setPlan('category','${cat}')">${cat}</div>`).join('')}
+          </div>
+        </div>
+        <div class="field">
+          <div class="plan-question">Priority?</div>
+          <div class="chip-group">
+            ${PRIORITY_OPTIONS.map(p => `<div class="chip${c.priority === p ? ' selected' : ''}" onclick="setPlan('priority','${p}')">${p}</div>`).join('')}
+          </div>
+        </div>
+        <div class="field">
+          <div class="plan-question">Depends on anyone?</div>
+          <input class="field-input" id="plan-dep" placeholder="Optional — e.g. 'Waiting on Jake'" value="${escHtml(c.dependencies || '')}" oninput="setPlan('dependencies', this.value)">
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;margin-top:8px" onclick="nextPlanItem()">
+          ${state.planIndex < state.planItems.length - 1 ? 'Next Task →' : 'Finish Planning'}
+        </button>
+        <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:4px" onclick="skipPlanItem()">Skip this task</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderPlanComplete() {
+  return `<div class="overlay">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <h2>Week Planned!</h2>
+        <button class="btn-icon" onclick="closeModal()">${ICONS.close}</button>
+      </div>
+      <div class="modal-body" style="text-align:center;padding:32px 20px">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>
+        <h3 style="margin:16px 0 8px;font-size:20px">${state.planItems.length} tasks distributed</h3>
+        <p style="color:var(--text-secondary);font-size:14px;margin-bottom:24px">Your tasks have been spread across the week based on priority and time estimates.</p>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px" onclick="finalizePlan()">View My Week</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================
+// Add/Edit Task Modal
+// ============================================
+function renderTaskModal() {
+  const isEdit = state.view === 'edit-task';
+  const t = isEdit ? state.editTask : { name:'', time:'30min', category:'Business', priority:'This Week', dependencies:'', status:'Not Started', day: getTodayName() };
+
+  return `<div class="overlay" onclick="closePlanIfBg(event)">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <h2>${isEdit ? 'Edit Task' : 'Add Task'}</h2>
+        <button class="btn-icon" onclick="closeModal()">${ICONS.close}</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label class="field-label">Task</label>
+          <input class="field-input" id="task-name" placeholder="What needs to be done?" value="${escHtml(t.name)}">
+        </div>
+        <div class="field">
+          <label class="field-label">Time Estimate</label>
+          <div class="chip-group" id="task-time">
+            ${TIME_OPTIONS.map(opt => `<div class="chip${t.time === opt ? ' selected' : ''}" onclick="selectChip('task-time','${opt}', this)">${opt}</div>`).join('')}
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Category</label>
+          <div class="chip-group" id="task-category">
+            ${allCategories().map(cat => `<div class="chip cat-${catClass(cat)}${t.category === cat ? ' selected' : ''}" onclick="selectChip('task-category','${cat}', this)">${cat}</div>`).join('')}
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Priority</label>
+          <div class="chip-group" id="task-priority">
+            ${PRIORITY_OPTIONS.map(p => `<div class="chip${t.priority === p ? ' selected' : ''}" onclick="selectChip('task-priority','${p}', this)">${p}</div>`).join('')}
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Assigned Day</label>
+          <div class="chip-group" id="task-day">
+            ${DAY_NAMES.map(d => `<div class="chip${t.day === d ? ' selected' : ''}" onclick="selectChip('task-day','${d}', this)">${DAY_SHORT[DAY_NAMES.indexOf(d)]}</div>`).join('')}
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Dependencies</label>
+          <input class="field-input" id="task-deps" placeholder="Who or what does this depend on?" value="${escHtml(t.dependencies)}">
+        </div>
+        ${isEdit ? `<div class="field">
+          <label class="field-label">Status</label>
+          <div class="chip-group" id="task-status">
+            ${STATUS_OPTIONS.map(s => `<div class="chip${t.status === s ? ' selected' : ''}" onclick="selectChip('task-status','${s}', this)">${s}</div>`).join('')}
+          </div>
+        </div>` : ''}
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;margin-top:8px" onclick="saveTaskForm()">
+          ${isEdit ? 'Save Changes' : 'Add Task'}
+        </button>
+        ${isEdit ? `<button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:4px;color:var(--danger)" onclick="deleteTask(${state.editIndex});closeModal()">Delete Task</button>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================
+// Event handlers
+// ============================================
+let chipValues = {};
+
+function selectChip(groupId, value, el) {
+  chipValues[groupId] = value;
+  const group = el.parentElement;
+  group.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function bindEvents() {
+  // Re-initialize chip values from rendered state
+  document.querySelectorAll('.chip-group').forEach(g => {
+    const sel = g.querySelector('.chip.selected');
+    if (sel) chipValues[g.id] = sel.textContent.trim();
+  });
+}
+
+function openAddTask() {
+  chipValues = {};
+  state.view = 'add-task';
+  render();
+  setTimeout(() => {
+    const inp = document.getElementById('task-name');
+    if (inp) inp.focus();
+  }, 300);
+}
+
+function editTask(idx) {
+  state.editTask = { ...state.tasks[idx] };
+  state.editIndex = idx;
+  chipValues = {};
+  state.view = 'edit-task';
+  render();
+}
+
+async function deleteTask(idx) {
+  state.tasks.splice(idx, 1);
+  render();
+  await saveTasks();
+  toast('Task deleted');
+}
+
+async function toggleTask(idx) {
+  const t = state.tasks[idx];
+  if (t.status === 'Completed') {
+    t.status = 'Not Started';
+    t.completedAt = '';
+  } else {
+    t.status = 'Completed';
+    t.completedAt = new Date().toISOString();
+  }
+  render();
+  await saveTasks();
+}
+
+async function saveTaskForm() {
+  const name = document.getElementById('task-name')?.value?.trim();
+  if (!name) { toast('Please enter a task name'); return; }
+
+  const task = {
+    name,
+    time: chipValues['task-time'] || '30min',
+    category: chipValues['task-category'] || 'Business',
+    priority: chipValues['task-priority'] || 'This Week',
+    dependencies: document.getElementById('task-deps')?.value?.trim() || '',
+    status: chipValues['task-status'] || 'Not Started',
+    day: chipValues['task-day'] || getTodayName(),
+    completedAt: '',
+    createdDate: new Date().toISOString(),
+  };
+
+  if (task.status === 'Completed') {
+    task.completedAt = new Date().toISOString();
+  }
+
+  if (state.view === 'edit-task') {
+    // Preserve completion timestamp if still completed
+    if (task.status === 'Completed' && state.editTask.completedAt) {
+      task.completedAt = state.editTask.completedAt;
+    }
+    state.tasks[state.editIndex] = task;
+    toast('Task updated');
+  } else {
+    state.tasks.push(task);
+    toast('Task added');
+  }
+
+  state.view = 'main';
+  render();
+  await saveTasks();
+}
+
+function openPlanWeek() {
+  state.view = 'plan-paste';
+  render();
+}
+
+function startTriage() {
+  const raw = document.getElementById('plan-input')?.value || '';
+  const lines = raw.split('\n')
+    .map(l => l.replace(/^[\s\-\*\•\–\—\[\]\(\)xX✓✔️☐☑️\d.]+/, '').trim())
+    .filter(l => l.length > 0);
+
+  if (lines.length === 0) {
+    toast('Paste some tasks first!');
+    return;
+  }
+
+  state.planItems = lines;
+  state.planIndex = 0;
+  state.planCurrent = { time: '30min', category: 'Business', priority: 'This Week', dependencies: '' };
+  state.view = 'plan-triage';
+  state._planResults = [];
+  render();
+}
+
+function setPlan(key, val) {
+  state.planCurrent[key] = val;
+  render();
+}
+
+function nextPlanItem() {
+  if (!state.planCurrent.time) state.planCurrent.time = '30min';
+  if (!state.planCurrent.category) state.planCurrent.category = 'Business';
+  if (!state.planCurrent.priority) state.planCurrent.priority = 'This Week';
+
+  state._planResults.push({
+    name: state.planItems[state.planIndex],
+    time: state.planCurrent.time,
+    category: state.planCurrent.category,
+    priority: state.planCurrent.priority,
+    dependencies: state.planCurrent.dependencies || '',
+    status: 'Not Started',
+    day: '',
+    completedAt: '',
+    createdDate: new Date().toISOString(),
+  });
+
+  state.planIndex++;
+  state.planCurrent = { time: '30min', category: 'Business', priority: 'This Week', dependencies: '' };
+  render();
+}
+
+function skipPlanItem() {
+  state.planIndex++;
+  state.planCurrent = { time: '30min', category: 'Business', priority: 'This Week', dependencies: '' };
+  render();
+}
+
+async function finalizePlan() {
+  // Distribute tasks
+  const distributed = distributeTasksAcrossWeek(state._planResults);
+
+  // Add to state and save
+  for (const t of distributed) {
+    state.tasks.push(t);
+  }
+
+  state.view = 'main';
+  state._planResults = [];
+  state.planItems = [];
+  state.planIndex = 0;
+  render();
+  await saveTasks();
+  toast(`${distributed.length} tasks added to your week`);
+}
+
+function closeModal() {
+  state.view = 'main';
+  state.rolloverCount = 0;
+  render();
+}
+
+function closePlanIfBg(e) {
+  if (e.target.classList.contains('overlay')) closeModal();
+}
+
+async function refreshData() {
+  state.loading = true;
+  render();
+  await loadTasks();
+  rolloverTasks();
+  state.loading = false;
+  render();
+  toast('Refreshed');
+}
+
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// ============================================
+// Boot
+// ============================================
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+async function boot() {
+  render(); // show loading
+  try {
+    await loadScript('https://apis.google.com/js/api.js');
+    await loadScript('https://accounts.google.com/gsi/client');
+    gapiLoaded();
+    gisLoaded();
+  } catch(e) {
+    document.getElementById('app').innerHTML = `
+      <div class="auth-screen">
+        ${APP_ICON}
+        <h2>Weekly Task Planner</h2>
+        <p style="color:var(--danger)">Could not load Google APIs. Check your internet connection and try again.</p>
+        <button class="btn btn-secondary" onclick="location.reload()">Retry</button>
+      </div>`;
+  }
+}
+
+// Register service worker for PWA (inline via blob)
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'wtp-v1';
+    self.addEventListener('install', e => { self.skipWaiting(); });
+    self.addEventListener('activate', e => { e.waitUntil(clients.claim()); });
+    self.addEventListener('fetch', e => {
+      if (e.request.url.includes('googleapis.com') || e.request.url.includes('accounts.google.com')) {
+        return;
+      }
+      e.respondWith(
+        caches.match(e.request).then(r => r || fetch(e.request).then(resp => {
+          const clone = resp.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+          return resp;
+        }).catch(() => caches.match(e.request)))
+      );
+    });
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+
+boot();
+</script>
+</body>
+</html>
