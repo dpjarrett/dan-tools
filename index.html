@@ -995,6 +995,12 @@ async function initSheet() {
           resource: { values: [COLUMNS] }
         });
       }
+      // Always update headers to ensure new columns exist
+      await gapi.client.sheets.spreadsheets.values.update({
+        spreadsheetId: stored, range: 'Tasks!A1:K1',
+        valueInputOption: 'RAW',
+        resource: { values: [COLUMNS] }
+      });
       if (!sheets.includes('Settings')) {
         await gapi.client.sheets.spreadsheets.batchUpdate({
           spreadsheetId: stored,
@@ -1055,12 +1061,22 @@ async function loadTasks() {
       recurrence: r[9] || 'None',
       completedDays: r[10] || '', // Comma-separated day names where recurring task is done
     }));
-    // Repair any tasks saved with abbreviated day names (e.g. "Mon" -> "Monday")
+    // Repair tasks on load
     let needsSave = false;
     state.tasks.forEach(t => {
+      // Fix abbreviated day names (e.g. "Mon" -> "Monday")
       const shortIdx = DAY_SHORT.indexOf(t.day);
       if (shortIdx !== -1) {
         t.day = DAY_NAMES[shortIdx];
+        needsSave = true;
+      }
+      // Migrate recurring tasks that have status=Completed to use completedDays instead
+      if (isRecurring(t) && t.status === 'Completed') {
+        // If completedDays is empty, seed it with the assigned day
+        if (!t.completedDays) {
+          t.completedDays = t.day || '';
+        }
+        t.status = 'Not Started';
         needsSave = true;
       }
     });
@@ -1160,6 +1176,8 @@ function rolloverTasks() {
   state.tasks.forEach(t => {
     if (t.status === 'Completed') return;
     if (!t.day) return;
+    // Never rollover recurring tasks — they show on their applicable days automatically
+    if (isRecurring(t)) return;
     const taskDayIdx = DAY_NAMES.indexOf(t.day);
     if (taskDayIdx === -1) return;
 
@@ -1902,14 +1920,18 @@ async function toggleTask(idx) {
   const viewDay = state.selectedDay || getTodayName();
 
   if (isRecurring(t)) {
-    // Per-day completion for recurring tasks
+    // Per-day completion for recurring tasks — only affects the viewed day
     let days = (t.completedDays || '').split(',').map(d => d.trim()).filter(Boolean);
     if (days.includes(viewDay)) {
       days = days.filter(d => d !== viewDay);
+      toast(`Unchecked for ${viewDay}`);
     } else {
       days.push(viewDay);
+      toast(`Done for ${viewDay}`);
     }
     t.completedDays = days.join(',');
+    // Ensure status stays as-is for recurring (not 'Completed' globally)
+    if (t.status === 'Completed') t.status = 'Not Started';
   } else {
     // Non-recurring: normal toggle
     if (t.status === 'Completed') {
