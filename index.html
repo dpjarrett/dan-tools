@@ -694,6 +694,35 @@ textarea.field-input { resize: vertical; min-height: 80px; }
   margin-bottom: 2px;
 }
 
+/* Category filter bar */
+.filter-bar {
+  display: flex;
+  gap: 6px;
+  padding: 6px 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.filter-bar::-webkit-scrollbar { display: none; }
+.filter-chip {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.filter-chip:active { transform: scale(0.95); }
+.filter-chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
 /* Triage section for overdue tasks */
 .triage-section {
   margin: 12px 16px;
@@ -894,6 +923,7 @@ let state = {
   toastMsg: '',
   toastTimer: null,
   selectedDay: null, // Track selected day for day navigation
+  filterCategory: null, // null = show all, else filter by category name
 };
 
 let tokenClient;
@@ -1498,6 +1528,7 @@ function render() {
   if (state.view === 'main') {
     html += renderTodayHero();
     html += renderWeekPills();
+    html += renderCategoryFilter();
     if (state.triageTasks.length > 0) {
       html += renderTriageSection();
     }
@@ -1544,7 +1575,8 @@ function renderHeader() {
 
 function renderTodayHero() {
   const sel = state.selectedDay || getTodayStr();
-  const selectedDayTasks = state.tasks.filter(t => taskAppliesOnDay(t, sel));
+  let selectedDayTasks = state.tasks.filter(t => taskAppliesOnDay(t, sel));
+  if (state.filterCategory) selectedDayTasks = selectedDayTasks.filter(t => t.category === state.filterCategory);
   const active = selectedDayTasks.filter(t => !isTaskCompletedOnDay(t, sel));
   const done = selectedDayTasks.filter(t => isTaskCompletedOnDay(t, sel));
   const totalMin = getTotalMinutes(active);
@@ -1594,6 +1626,22 @@ function renderWeekPills() {
   return html;
 }
 
+function toggleFilter(cat) {
+  state.filterCategory = state.filterCategory === cat ? null : cat;
+  render();
+}
+
+function renderCategoryFilter() {
+  const cats = allCategories();
+  let html = '<div class="filter-bar">';
+  html += `<div class="filter-chip${!state.filterCategory ? ' active' : ''}" onclick="toggleFilter(null)">All</div>`;
+  cats.forEach(cat => {
+    html += `<div class="filter-chip${state.filterCategory === cat ? ' active' : ''}" onclick="toggleFilter('${escHtml(cat)}')">${escHtml(cat)}</div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
 function renderTriageSection() {
   const count = state.triageTasks.length;
   let html = '<div class="triage-section">';
@@ -1617,11 +1665,13 @@ function renderTodayTasks() {
   const sel = state.selectedDay || getTodayStr();
   const selDate = new Date(sel + 'T12:00:00');
   const dayLabel = DAY_NAMES[selDate.getDay()];
-  const selectedDayTasks = state.tasks.filter(t => taskAppliesOnDay(t, sel));
+  let selectedDayTasks = state.tasks.filter(t => taskAppliesOnDay(t, sel));
+  if (state.filterCategory) selectedDayTasks = selectedDayTasks.filter(t => t.category === state.filterCategory);
   let html = '<div class="section"><div class="task-list">';
 
   if (selectedDayTasks.length === 0) {
-    html += `<div class="empty-state"><p>No tasks for ${dayLabel}.<br>Add a task or plan your week!</p></div>`;
+    const filterMsg = state.filterCategory ? ` in ${state.filterCategory}` : '';
+    html += `<div class="empty-state"><p>No tasks for ${dayLabel}${filterMsg}.<br>Add a task or plan your week!</p></div>`;
   } else {
     selectedDayTasks.sort((a, b) => {
       // Completed tasks sink to bottom
