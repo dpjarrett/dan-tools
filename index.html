@@ -1321,8 +1321,10 @@ function taskAppliesOnDay(task, dateStr) {
   // Backward compat: task still has day name
   if (!isDateStr(task.day) && task.day === dayName) return true;
 
-  // Recurring tasks show on applicable days
+  // Recurring tasks show on applicable days, but only on or after their start date
   if (!task.recurrence || task.recurrence === 'None') return false;
+  // Don't show before the task's start date
+  if (isDateStr(task.day) && isDateStr(dateStr) && dateStr < task.day) return false;
   if (task.recurrence === 'Daily') return true;
   if (task.recurrence === 'Weekdays') {
     const dayIdx = DAY_NAMES.indexOf(dayName);
