@@ -927,6 +927,7 @@ async function maybeEnableAuth() {
       try {
         await initSheet();
         await loadTasks();
+        await loadCategories();
         rolloverTasks();
         state.loading = false;
         render();
@@ -953,27 +954,6 @@ function handleAuth() {
 // ============================================
 // Sheet operations
 // ============================================
-async function findOrCreateSheet() {
-  // Search for existing sheet
-  try {
-    const resp = await gapi.client.sheets.spreadsheets.get({ spreadsheetId: state.spreadsheetId });
-    return state.spreadsheetId;
-  } catch(e) {}
-
-  // Search Drive for the sheet by name (using sheets list would need drive scope, so we create)
-  const stored = localStorage.getItem('wtp_sheet_id');
-  if (stored) {
-    try {
-      await gapi.client.sheets.spreadsheets.get({ spreadsheetId: stored });
-      state.spreadsheetId = stored;
-      return stored;
-    } catch(e) {
-      localStorage.removeItem('wtp_sheet_id');
-    }
-  }
-  return null;
-}
-
 async function initSheet() {
   // Use fixed sheet ID so all devices share the same data
   const stored = FIXED_SHEET_ID || localStorage.getItem('wtp_sheet_id');
