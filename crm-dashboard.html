@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM Dashboard</title>
+<style>
+  :root {
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-light: #eef2ff;
+    --danger: #ef4444;
+    --danger-hover: #dc2626;
+    --success: #22c55e;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    line-height: 1.5;
+  }
+
+  /* ---- Auth Screen ---- */
+  #auth-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 24px;
+    padding: 24px;
+    text-align: center;
+  }
+  #auth-screen h1 { font-size: 2rem; color: var(--gray-900); }
+  #auth-screen p { color: var(--gray-500); max-width: 420px; }
+
+  /* ---- App Shell ---- */
+  #app { display: none; }
+  header {
+    background: #fff;
+    border-bottom: 1px solid var(--gray-200);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  header h1 { font-size: 1.25rem; color: var(--gray-900); }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--gray-500);
+  }
+  .user-info img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+  }
+
+  /* ---- Toolbar ---- */
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px 24px;
+    align-items: center;
+  }
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+    max-width: 400px;
+    position: relative;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 10px 14px 10px 38px;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-box input:focus { border-color: var(--primary); }
+  .search-box svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-400);
+  }
+
+  select {
+    padding: 10px 14px;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    background: #fff;
+    cursor: pointer;
+    outline: none;
+  }
+  select:focus { border-color: var(--primary); }
+
+  /* ---- Buttons ---- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-secondary { background: var(--gray-100); color: var(--gray-700); border: 1px solid var(--gray-300); }
+  .btn-secondary:hover { background: var(--gray-200); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { background: var(--danger-hover); }
+  .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+  .btn-icon { padding: 8px; border-radius: 8px; }
+
+  /* ---- Contact Grid ---- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    padding: 0 24px 24px;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  .card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .card-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gray-900);
+  }
+  .card-actions { display: flex; gap: 4px; }
+  .card-company {
+    font-size: 0.85rem;
+    color: var(--gray-500);
+  }
+  .card-detail {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--gray-600);
+  }
+  .card-detail svg { flex-shrink: 0; color: var(--gray-400); }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+  .card-notes {
+    font-size: 0.83rem;
+    color: var(--gray-500);
+    border-top: 1px solid var(--gray-100);
+    padding-top: 10px;
+    margin-top: 4px;
+  }
+
+  /* ---- Modal ---- */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 24px;
+  }
+  .modal h2 {
+    font-size: 1.2rem;
+    color: var(--gray-900);
+    margin-bottom: 20px;
+  }
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--gray-700);
+    margin-bottom: 6px;
+  }
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus {
+    border-color: var(--primary);
+  }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+  .modal-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+
+  /* ---- Manage Types ---- */
+  .type-list { list-style: none; }
+  .type-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .type-list li:last-child { border-bottom: none; }
+  .add-type-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .add-type-row input { flex: 1; }
+
+  /* ---- Loading / Status ---- */
+  .status-bar {
+    text-align: center;
+    padding: 8px;
+    font-size: 0.8rem;
+    color: var(--gray-500);
+  }
+  .spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--gray-300);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 0.95rem;
+    color: var(--gray-600);
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-overlay .spinner { width: 32px; height: 32px; border-width: 3px; }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--gray-400);
+  }
+  .empty-state svg { margin-bottom: 16px; }
+  .empty-state p { font-size: 1rem; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--gray-800);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    box-shadow: var(--shadow-lg);
+    z-index: 300;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+  @media (max-width: 640px) {
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .search-box { max-width: 100%; }
+    .grid { grid-template-columns: 1fr; }
+    header { flex-direction: column; gap: 8px; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH SCREEN ============ -->
+<div id="auth-screen">
+  <svg width="56" height="56" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="color:var(--primary)">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
+  </svg>
+  <h1>CRM Dashboard</h1>
+  <p>Sign in with your Google account to sync contacts with Google Sheets. Your data stays in your own spreadsheet.</p>
+  <button class="btn btn-primary" onclick="handleAuth()" style="padding:14px 32px;font-size:1rem;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+    Sign in with Google
+  </button>
+  <p style="font-size:0.8rem;color:var(--gray-400);margin-top:8px;">
+    Uses Google Sheets API to store contacts in your Google Drive.
+  </p>
+</div>
+
+<!-- ============ MAIN APP ============ -->
+<div id="app">
+  <header>
+    <h1>CRM Dashboard</h1>
+    <div class="header-right">
+      <div class="user-info">
+        <img id="user-avatar" src="" alt="">
+        <span id="user-name"></span>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="handleSignOut()">Sign Out</button>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="search-input" placeholder="Search contacts..." oninput="renderContacts()">
+    </div>
+    <select id="filter-type" onchange="renderContacts()">
+      <option value="">All Types</option>
+    </select>
+    <button class="btn btn-secondary" onclick="openManageTypes()">Manage Types</button>
+    <button class="btn btn-primary" onclick="openAddContact()">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 5v14m-7-7h14"/></svg>
+      Add Contact
+    </button>
+  </div>
+
+  <div class="status-bar" id="status-bar"></div>
+  <div class="grid" id="contacts-grid"></div>
+</div>
+
+<!-- ============ LOADING OVERLAY ============ -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <span id="loading-msg">Loading contacts...</span>
+</div>
+
+<!-- ============ CONTACT MODAL ============ -->
+<div class="modal-overlay" id="contact-modal">
+  <div class="modal">
+    <h2 id="contact-modal-title">Add Contact</h2>
+    <div class="form-group">
+      <label>Name *</label>
+      <input type="text" id="f-name" placeholder="Full name">
+    </div>
+    <div class="form-group">
+      <label>Company</label>
+      <input type="text" id="f-company" placeholder="Company name">
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="f-email" placeholder="email@example.com">
+    </div>
+    <div class="form-group">
+      <label>Phone</label>
+      <input type="tel" id="f-phone" placeholder="(555) 123-4567">
+    </div>
+    <div class="form-group">
+      <label>Work Type</label>
+      <select id="f-type"></select>
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea id="f-notes" placeholder="Any notes about this contact..."></textarea>
+    </div>
+    <input type="hidden" id="f-row-index" value="">
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('contact-modal')">Cancel</button>
+      <button class="btn btn-primary" id="contact-save-btn" onclick="saveContact()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MANAGE TYPES MODAL ============ -->
+<div class="modal-overlay" id="types-modal">
+  <div class="modal">
+    <h2>Manage Work Types</h2>
+    <ul class="type-list" id="type-list"></ul>
+    <div class="add-type-row">
+      <input type="text" id="new-type-input" placeholder="New work type...">
+      <button class="btn btn-primary btn-sm" onclick="addNewType()">Add</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('types-modal')">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DELETE CONFIRM MODAL ============ -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal" style="max-width:400px;text-align:center;">
+    <h2>Delete Contact</h2>
+    <p style="color:var(--gray-500);margin-bottom:20px;">Are you sure you want to delete <strong id="delete-name"></strong>? This cannot be undone.</p>
+    <input type="hidden" id="delete-row-index" value="">
+    <div class="modal-footer" style="justify-content:center;">
+      <button class="btn btn-secondary" onclick="closeModal('delete-modal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TOAST ============ -->
+<div class="toast" id="toast"></div>
+
+<!-- ============ SCRIPTS ============ -->
+<script>
+// =====================================================
+// CONFIG — Replace with your own Client ID
+// =====================================================
+const CLIENT_ID = '80439686719-sbus2kg78uj5s4s6b7ctvng0eii16fek.apps.googleusercontent.com';
+const API_KEY = '';  // Optional — not required for OAuth flow
+const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file';
+const SHEET_TITLE = 'CRM Contacts';
+const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
+
+// =====================================================
+// STATE
+// =====================================================
+let spreadsheetId = null;
+let contacts = [];
+let workTypes = ['Production', 'Design', 'Development', 'Marketing', 'Sales', 'Management', 'Other'];
+let tokenClient = null;
+let gapiInited = false;
+let gisInited = false;
+
+// Column mapping: A=Name, B=Company, C=Email, D=Phone, E=WorkType, F=Notes
+const HEADERS = ['Name', 'Company', 'Email', 'Phone', 'Work Type', 'Notes'];
+
+// Default contacts to seed an empty sheet
+const SEED_CONTACTS = [
+  { name: 'Sarah', company: '', email: '', phone: '', type: 'Design', notes: '' },
+  { name: 'Marcus', company: '', email: '', phone: '', type: 'Development', notes: '' },
+  { name: 'Aisha', company: '', email: '', phone: '', type: 'Marketing', notes: '' },
+  { name: 'Ryky', company: '', email: '', phone: '', type: 'Sales', notes: '' },
+  { name: 'Blaze', company: '', email: '', phone: '', type: 'Management', notes: '' },
+  { name: 'Dennis Choy', company: 'Housewright', email: '', phone: '', type: 'Production', notes: '' },
+  { name: 'Lee Fields', company: 'Black Box', email: '', phone: '', type: 'Production', notes: '' },
+  { name: 'Bill Giba', company: 'Goal Line', email: '', phone: '', type: 'Production', notes: '' },
+  { name: 'Peter Zabelin', company: 'Arc 8', email: '', phone: '', type: 'Production', notes: '' },
+  { name: 'Mark Hail', company: '', email: '', phone: '', type: 'Production', notes: '' },
+  { name: 'Austin Hail', company: '', email: '', phone: '', type: 'Production', notes: '' },
+  { name: 'Dean Arrington', company: '', email: '', phone: '', type: 'Production', notes: '' },
+  { name: 'Tass Souza', company: '', email: '', phone: '', type: 'Production', notes: '' },
+  { name: 'Jakob Cody', company: '', email: '', phone: '', type: 'Production', notes: '' },
+  { name: 'Benji Treuil', company: '', email: '', phone: '', type: 'Production', notes: '' },
+  { name: 'Matt Francis', company: '', email: '', phone: '', type: 'Production', notes: '' },
+  { name: 'Vince Pham', company: '', email: '', phone: '', type: 'Production', notes: '' },
+];
+
+// =====================================================
+// GOOGLE API INIT
+// =====================================================
+function gapiLoaded() {
+  gapi.load('client', async () => {
+    await gapi.client.init({ discoveryDocs: [DISCOVERY_DOC] });
+    gapiInited = true;
+    maybeEnableAuth();
+  });
+}
+
+function gisLoaded() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: '', // set later
+  });
+  gisInited = true;
+  maybeEnableAuth();
+}
+
+function maybeEnableAuth() {
+  if (gapiInited && gisInited) {
+    // Check if we already have a token stored
+    const storedToken = sessionStorage.getItem('gapi_token');
+    if (storedToken) {
+      try {
+        const token = JSON.parse(storedToken);
+        gapi.client.setToken(token);
+        onSignedIn();
+      } catch(e) {
+        sessionStorage.removeItem('gapi_token');
+      }
+    }
+  }
+}
+
+function handleAuth() {
+  if (!gapiInited || !gisInited) {
+    showToast('Google APIs still loading, please wait...');
+    return;
+  }
+  tokenClient.callback = async (resp) => {
+    if (resp.error) {
+      console.error('Auth error:', resp);
+      showToast('Sign-in failed: ' + resp.error);
+      return;
+    }
+    // Store token for session
+    sessionStorage.setItem('gapi_token', JSON.stringify(gapi.client.getToken()));
+    onSignedIn();
+  };
+  tokenClient.requestAccessToken({ prompt: 'consent' });
+}
+
+function handleSignOut() {
+  const token = gapi.client.getToken();
+  if (token) {
+    google.accounts.oauth2.revoke(token.access_token);
+    gapi.client.setToken(null);
+  }
+  sessionStorage.removeItem('gapi_token');
+  sessionStorage.removeItem('crm_spreadsheet_id');
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  contacts = [];
+}
+
+async function onSignedIn() {
+  // Show app, hide auth
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  // Get user info
+  try {
+    const tokenInfo = gapi.client.getToken();
+    if (tokenInfo && tokenInfo.access_token) {
+      const res = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+        headers: { Authorization: 'Bearer ' + tokenInfo.access_token }
+      });
+      const info = await res.json();
+      document.getElementById('user-name').textContent = info.name || info.email || '';
+      if (info.picture) {
+        document.getElementById('user-avatar').src = info.picture;
+        document.getElementById('user-avatar').style.display = 'block';
+      }
+    }
+  } catch(e) { /* ignore */ }
+
+  showLoading('Connecting to Google Sheets...');
+  await findOrCreateSpreadsheet();
+  await loadContacts();
+  hideLoading();
+}
+
+// =====================================================
+// SPREADSHEET MANAGEMENT
+// =====================================================
+async function findOrCreateSpreadsheet() {
+  // Check sessionStorage first
+  const cached = sessionStorage.getItem('crm_spreadsheet_id');
+  if (cached) {
+    // Verify it still exists
+    try {
+      const resp = await gapi.client.sheets.spreadsheets.get({ spreadsheetId: cached });
+      spreadsheetId = cached;
+      return;
+    } catch (e) {
+      sessionStorage.removeItem('crm_spreadsheet_id');
+    }
+  }
+
+  // Search Drive for existing sheet
+  try {
+    const token = gapi.client.getToken();
+    const searchResp = await fetch(
+      `https://www.googleapis.com/drive/v3/files?q=name='${SHEET_TITLE}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false&fields=files(id,name)&pageSize=1`,
+      { headers: { Authorization: 'Bearer ' + token.access_token } }
+    );
+    const searchData = await searchResp.json();
+    if (searchData.files && searchData.files.length > 0) {
+      spreadsheetId = searchData.files[0].id;
+      sessionStorage.setItem('crm_spreadsheet_id', spreadsheetId);
+      return;
+    }
+  } catch (e) {
+    console.warn('Drive search failed, creating new sheet:', e);
+  }
+
+  // Create new spreadsheet
+  const createResp = await gapi.client.sheets.spreadsheets.create({
+    resource: {
+      properties: { title: SHEET_TITLE },
+      sheets: [
+        {
+          properties: { title: 'Contacts', gridProperties: { frozenRowCount: 1 } }
+        },
+        {
+          properties: { title: 'WorkTypes' }
+        }
+      ]
+    }
+  });
+  spreadsheetId = createResp.result.spreadsheetId;
+  sessionStorage.setItem('crm_spreadsheet_id', spreadsheetId);
+
+  // Write headers to Contacts sheet
+  await gapi.client.sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: 'Contacts!A1:F1',
+    valueInputOption: 'RAW',
+    resource: { values: [HEADERS] }
+  });
+
+  // Seed default contacts
+  const seedRows = SEED_CONTACTS.map(c => [c.name, c.company, c.email, c.phone, c.type, c.notes]);
+  await gapi.client.sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: 'Contacts!A2',
+    valueInputOption: 'RAW',
+    insertDataOption: 'INSERT_ROWS',
+    resource: { values: seedRows }
+  });
+
+  // Seed default work types
+  await gapi.client.sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: 'WorkTypes!A1',
+    valueInputOption: 'RAW',
+    resource: { values: workTypes.map(t => [t]) }
+  });
+
+  showToast('Created new "CRM Contacts" spreadsheet in your Google Drive');
+}
+
+// =====================================================
+// DATA OPERATIONS
+// =====================================================
+async function loadContacts() {
+  try {
+    // Load contacts
+    const resp = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: 'Contacts!A2:F1000'
+    });
+    const rows = resp.result.values || [];
+    contacts = rows.map((row, i) => ({
+      rowIndex: i + 2, // 1-indexed, skip header
+      name: row[0] || '',
+      company: row[1] || '',
+      email: row[2] || '',
+      phone: row[3] || '',
+      type: row[4] || '',
+      notes: row[5] || ''
+    }));
+
+    // Load work types
+    try {
+      const typesResp = await gapi.client.sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: 'WorkTypes!A1:A100'
+      });
+      const typeRows = typesResp.result.values || [];
+      if (typeRows.length > 0) {
+        workTypes = typeRows.map(r => r[0]).filter(Boolean);
+      }
+    } catch(e) {
+      console.warn('WorkTypes sheet not found, using defaults');
+    }
+
+    updateStatus(`${contacts.length} contact${contacts.length !== 1 ? 's' : ''} synced`);
+    populateTypeDropdowns();
+    renderContacts();
+  } catch (e) {
+    console.error('Failed to load contacts:', e);
+    if (e.status === 401 || e.status === 403) {
+      showToast('Session expired. Please sign in again.');
+      handleSignOut();
+    } else {
+      showToast('Error loading contacts: ' + (e.result?.error?.message || e.message || 'Unknown error'));
+    }
+  }
+}
+
+async function addContactToSheet(contact) {
+  const row = [contact.name, contact.company, contact.email, contact.phone, contact.type, contact.notes];
+  const resp = await gapi.client.sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: 'Contacts!A2',
+    valueInputOption: 'RAW',
+    insertDataOption: 'INSERT_ROWS',
+    resource: { values: [row] }
+  });
+  return resp;
+}
+
+async function updateContactInSheet(rowIndex, contact) {
+  const row = [contact.name, contact.company, contact.email, contact.phone, contact.type, contact.notes];
+  await gapi.client.sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: `Contacts!A${rowIndex}:F${rowIndex}`,
+    valueInputOption: 'RAW',
+    resource: { values: [row] }
+  });
+}
+
+async function deleteContactFromSheet(rowIndex) {
+  // Get the sheet ID for the Contacts sheet
+  const ssResp = await gapi.client.sheets.spreadsheets.get({ spreadsheetId });
+  const contactsSheet = ssResp.result.sheets.find(s => s.properties.title === 'Contacts');
+  const sheetId = contactsSheet.properties.sheetId;
+
+  await gapi.client.sheets.spreadsheets.batchUpdate({
+    spreadsheetId,
+    resource: {
+      requests: [{
+        deleteDimension: {
+          range: {
+            sheetId: sheetId,
+            dimension: 'ROWS',
+            startIndex: rowIndex - 1, // 0-indexed
+            endIndex: rowIndex
+          }
+        }
+      }]
+    }
+  });
+}
+
+async function saveWorkTypesToSheet() {
+  // Clear and rewrite work types
+  try {
+    await gapi.client.sheets.spreadsheets.values.clear({
+      spreadsheetId,
+      range: 'WorkTypes!A1:A100'
+    });
+    await gapi.client.sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: 'WorkTypes!A1',
+      valueInputOption: 'RAW',
+      resource: { values: workTypes.map(t => [t]) }
+    });
+  } catch(e) {
+    console.error('Failed to save work types:', e);
+  }
+}
+
+// =====================================================
+// UI RENDERING
+// =====================================================
+function renderContacts() {
+  const grid = document.getElementById('contacts-grid');
+  const search = document.getElementById('search-input').value.toLowerCase();
+  const filterType = document.getElementById('filter-type').value;
+
+  let filtered = contacts.filter(c => {
+    const matchesSearch = !search ||
+      c.name.toLowerCase().includes(search) ||
+      c.company.toLowerCase().includes(search) ||
+      c.email.toLowerCase().includes(search) ||
+      c.phone.toLowerCase().includes(search) ||
+      c.notes.toLowerCase().includes(search);
+    const matchesType = !filterType || c.type === filterType;
+    return matchesSearch && matchesType;
+  });
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1;">
+        <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="color:var(--gray-300)">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
+        </svg>
+        <p>${search || filterType ? 'No contacts match your search.' : 'No contacts yet. Add your first contact!'}</p>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(c => `
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-name">${esc(c.name)}</div>
+          ${c.company ? `<div class="card-company">${esc(c.company)}</div>` : ''}
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-icon btn-secondary btn-sm" title="Edit" onclick="openEditContact(${c.rowIndex})">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"/></svg>
+          </button>
+          <button class="btn btn-icon btn-secondary btn-sm" title="Delete" onclick="openDeleteContact(${c.rowIndex}, '${esc(c.name)}')">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+          </button>
+        </div>
+      </div>
+      ${c.email ? `<div class="card-detail">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+        ${esc(c.email)}
+      </div>` : ''}
+      ${c.phone ? `<div class="card-detail">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/></svg>
+        ${esc(c.phone)}
+      </div>` : ''}
+      ${c.type ? `<div><span class="badge">${esc(c.type)}</span></div>` : ''}
+      ${c.notes ? `<div class="card-notes">${esc(c.notes)}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function populateTypeDropdowns() {
+  // Filter dropdown
+  const filterEl = document.getElementById('filter-type');
+  const currentFilter = filterEl.value;
+  filterEl.innerHTML = '<option value="">All Types</option>' +
+    workTypes.map(t => `<option value="${esc(t)}" ${t === currentFilter ? 'selected' : ''}>${esc(t)}</option>`).join('');
+
+  // Form dropdown
+  const formEl = document.getElementById('f-type');
+  const currentForm = formEl.value;
+  formEl.innerHTML = '<option value="">Select type...</option>' +
+    workTypes.map(t => `<option value="${esc(t)}" ${t === currentForm ? 'selected' : ''}>${esc(t)}</option>`).join('');
+}
+
+// =====================================================
+// CONTACT MODAL ACTIONS
+// =====================================================
+function openAddContact() {
+  document.getElementById('contact-modal-title').textContent = 'Add Contact';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-company').value = '';
+  document.getElementById('f-email').value = '';
+  document.getElementById('f-phone').value = '';
+  document.getElementById('f-type').value = '';
+  document.getElementById('f-notes').value = '';
+  document.getElementById('f-row-index').value = '';
+  document.getElementById('contact-save-btn').textContent = 'Add Contact';
+  populateTypeDropdowns();
+  openModal('contact-modal');
+  document.getElementById('f-name').focus();
+}
+
+function openEditContact(rowIndex) {
+  const c = contacts.find(x => x.rowIndex === rowIndex);
+  if (!c) return;
+  document.getElementById('contact-modal-title').textContent = 'Edit Contact';
+  document.getElementById('f-name').value = c.name;
+  document.getElementById('f-company').value = c.company;
+  document.getElementById('f-email').value = c.email;
+  document.getElementById('f-phone').value = c.phone;
+  document.getElementById('f-notes').value = c.notes;
+  document.getElementById('f-row-index').value = rowIndex;
+  document.getElementById('contact-save-btn').textContent = 'Save Changes';
+  populateTypeDropdowns();
+  document.getElementById('f-type').value = c.type;
+  openModal('contact-modal');
+  document.getElementById('f-name').focus();
+}
+
+async function saveContact() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) {
+    showToast('Name is required');
+    document.getElementById('f-name').focus();
+    return;
+  }
+
+  const contact = {
+    name,
+    company: document.getElementById('f-company').value.trim(),
+    email: document.getElementById('f-email').value.trim(),
+    phone: document.getElementById('f-phone').value.trim(),
+    type: document.getElementById('f-type').value,
+    notes: document.getElementById('f-notes').value.trim()
+  };
+
+  const rowIndex = document.getElementById('f-row-index').value;
+  closeModal('contact-modal');
+  showLoading(rowIndex ? 'Updating contact...' : 'Adding contact...');
+
+  try {
+    if (rowIndex) {
+      await updateContactInSheet(parseInt(rowIndex), contact);
+      showToast(`Updated ${contact.name}`);
+    } else {
+      await addContactToSheet(contact);
+      showToast(`Added ${contact.name}`);
+    }
+    await loadContacts();
+  } catch (e) {
+    console.error('Save failed:', e);
+    showToast('Error saving contact: ' + (e.result?.error?.message || e.message || 'Unknown'));
+  }
+  hideLoading();
+}
+
+function openDeleteContact(rowIndex, name) {
+  document.getElementById('delete-name').textContent = name;
+  document.getElementById('delete-row-index').value = rowIndex;
+  openModal('delete-modal');
+}
+
+async function confirmDelete() {
+  const rowIndex = parseInt(document.getElementById('delete-row-index').value);
+  const c = contacts.find(x => x.rowIndex === rowIndex);
+  closeModal('delete-modal');
+  showLoading('Deleting contact...');
+
+  try {
+    await deleteContactFromSheet(rowIndex);
+    showToast(`Deleted ${c ? c.name : 'contact'}`);
+    await loadContacts();
+  } catch (e) {
+    console.error('Delete failed:', e);
+    showToast('Error deleting contact: ' + (e.result?.error?.message || e.message || 'Unknown'));
+  }
+  hideLoading();
+}
+
+// =====================================================
+// MANAGE TYPES
+// =====================================================
+function openManageTypes() {
+  renderTypeList();
+  openModal('types-modal');
+}
+
+function renderTypeList() {
+  const list = document.getElementById('type-list');
+  list.innerHTML = workTypes.map((t, i) => `
+    <li>
+      <span>${esc(t)}</span>
+      <button class="btn btn-icon btn-sm" style="color:var(--danger);" onclick="removeType(${i})" title="Remove">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </li>
+  `).join('');
+}
+
+async function addNewType() {
+  const input = document.getElementById('new-type-input');
+  const val = input.value.trim();
+  if (!val) return;
+  if (workTypes.includes(val)) {
+    showToast('Type already exists');
+    return;
+  }
+  workTypes.push(val);
+  input.value = '';
+  renderTypeList();
+  populateTypeDropdowns();
+  await saveWorkTypesToSheet();
+  showToast(`Added type: ${val}`);
+}
+
+async function removeType(index) {
+  const removed = workTypes.splice(index, 1)[0];
+  renderTypeList();
+  populateTypeDropdowns();
+  await saveWorkTypesToSheet();
+  showToast(`Removed type: ${removed}`);
+}
+
+// =====================================================
+// UI HELPERS
+// =====================================================
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+function showLoading(msg) {
+  document.getElementById('loading-msg').textContent = msg || 'Loading...';
+  document.getElementById('loading-overlay').classList.add('active');
+}
+function hideLoading() {
+  document.getElementById('loading-overlay').classList.remove('active');
+}
+function updateStatus(msg) {
+  document.getElementById('status-bar').textContent = msg;
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+function esc(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// Keyboard shortcut: Escape closes modals
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+  }
+});
+
+// Click outside modal to close
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('active');
+  });
+});
+</script>
+
+<!-- Google API Libraries -->
+<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+
+</body>
+</html>
