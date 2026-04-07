@@ -871,7 +871,7 @@ const PRIORITY_OPTIONS = ['High','Medium','Low'];
 const PRIORITY_RANK = { 'High': 0, 'Medium': 1, 'Low': 2 };
 const STATUS_OPTIONS = ['Not Started','In Progress','Completed'];
 
-const COLUMNS = ['Task','TimeEstimate','Category','Priority','Dependencies','Status','AssignedDay','CompletionTimestamp','CreatedDate','Recurrence','CompletedDays'];
+const COLUMNS = ['Task','TimeEstimate','Category','Priority','Dependencies','Status','AssignedDay','CompletionTimestamp','CreatedDate','Recurrence','CompletedDays','ScheduledTime'];
 const HOURS_PER_DAY = 8;
 const FIXED_SHEET_ID = '1qM_1TL4lolopaudTcgxwvQEy1Z9L6Lh1PC09H72VsXg';
 
@@ -998,14 +998,14 @@ async function initSheet() {
           resource: { requests: [{ addSheet: { properties: { title: 'Tasks' } } }] }
         });
         await gapi.client.sheets.spreadsheets.values.update({
-          spreadsheetId: stored, range: 'Tasks!A1:K1',
+          spreadsheetId: stored, range: 'Tasks!A1:L1',
           valueInputOption: 'RAW',
           resource: { values: [COLUMNS] }
         });
       }
       // Always update headers to ensure new columns exist
       await gapi.client.sheets.spreadsheets.values.update({
-        spreadsheetId: stored, range: 'Tasks!A1:K1',
+        spreadsheetId: stored, range: 'Tasks!A1:L1',
         valueInputOption: 'RAW',
         resource: { values: [COLUMNS] }
       });
@@ -1036,7 +1036,7 @@ async function initSheet() {
 
   // Add header row
   await gapi.client.sheets.spreadsheets.values.update({
-    spreadsheetId: state.spreadsheetId, range: 'Tasks!A1:K1',
+    spreadsheetId: state.spreadsheetId, range: 'Tasks!A1:L1',
     valueInputOption: 'RAW',
     resource: { values: [COLUMNS] }
   });
@@ -1052,7 +1052,7 @@ async function initSheet() {
 async function loadTasks() {
   try {
     const resp = await gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: state.spreadsheetId, range: 'Tasks!A2:K1000'
+      spreadsheetId: state.spreadsheetId, range: 'Tasks!A2:L1000'
     });
     const rows = resp.result.values || [];
     state.tasks = rows.map((r, i) => ({
@@ -1068,6 +1068,7 @@ async function loadTasks() {
       createdDate: r[8] || '',
       recurrence: r[9] || 'None',
       completedDays: r[10] || '', // Comma-separated day names where recurring task is done
+      scheduledTime: r[11] || '', // HH:MM time of day
     }));
     // Repair tasks on load
     let needsSave = false;
@@ -1146,19 +1147,19 @@ async function saveCategories() {
 async function saveTasks(tasks) {
   if (!tasks) tasks = state.tasks;
   const values = tasks.map(t => [
-    t.name, t.time, t.category, t.priority, t.dependencies, t.status, t.day, t.completedAt, t.createdDate, t.recurrence || 'None', t.completedDays || ''
+    t.name, t.time, t.category, t.priority, t.dependencies, t.status, t.day, t.completedAt, t.createdDate, t.recurrence || 'None', t.completedDays || '', t.scheduledTime || ''
   ]);
   // Clear existing data and write all
   try {
     await gapi.client.sheets.spreadsheets.values.clear({
-      spreadsheetId: state.spreadsheetId, range: 'Tasks!A2:K1000'
+      spreadsheetId: state.spreadsheetId, range: 'Tasks!A2:L1000'
     });
   } catch(e) {}
 
   if (values.length > 0) {
     await gapi.client.sheets.spreadsheets.values.update({
       spreadsheetId: state.spreadsheetId,
-      range: `Tasks!A2:K${values.length + 1}`,
+      range: `Tasks!A2:L${values.length + 1}`,
       valueInputOption: 'RAW',
       resource: { values }
     });
@@ -1282,6 +1283,14 @@ function dateStrToDayName(dateStr) {
 
 function isDateStr(val) {
   return val && /^\d{4}-\d{2}-\d{2}$/.test(val);
+}
+
+function formatTime12(timeStr) {
+  if (!timeStr) return '';
+  const [h, m] = timeStr.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
 }
 
 function dayNameToDateStr(dayName) {
@@ -1627,6 +1636,10 @@ function renderTodayTasks() {
       // Then In Progress before Not Started
       if (a.status === 'In Progress' && b.status !== 'In Progress') return -1;
       if (b.status === 'In Progress' && a.status !== 'In Progress') return 1;
+      // Then by scheduled time (tasks with a time come first, sorted chronologically)
+      if (a.scheduledTime && b.scheduledTime) return a.scheduledTime.localeCompare(b.scheduledTime);
+      if (a.scheduledTime && !b.scheduledTime) return -1;
+      if (!a.scheduledTime && b.scheduledTime) return 1;
       return 0;
     }).forEach((t) => {
       const idx = state.tasks.indexOf(t);
@@ -1672,6 +1685,7 @@ function renderTaskCard(t, idx, forDay) {
         <span class="task-badge badge-${cc}"${cc === 'custom' ? ` style="background:${customCatColor(t.category)}22;color:${customCatColor(t.category)}"` : ''}>${escHtml(t.category)}</span>
         <span class="task-badge ${priorityClass}">${t.priority}</span>
         <span class="task-time">${ICONS.clock} ${t.time}</span>
+        ${t.scheduledTime ? `<span class="task-time" style="color:var(--accent)">@ ${formatTime12(t.scheduledTime)}</span>` : ''}
         ${hasRecurrence ? `<span class="task-repeat">${ICONS.repeat}</span>` : ''}
         ${t.dependencies ? `<span class="task-dep">${ICONS.link} ${escHtml(t.dependencies)}</span>` : ''}
       </div>
@@ -1925,6 +1939,10 @@ function renderTaskModal() {
           <input type="date" class="field-input" id="task-day" value="${t.day || getTodayStr()}" onchange="chipValues['task-day']=this.value">
         </div>
         <div class="field">
+          <label class="field-label">Scheduled Time <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+          <input type="time" class="field-input" id="task-scheduled-time" value="${t.scheduledTime || ''}" onchange="chipValues['task-scheduled-time']=this.value">
+        </div>
+        <div class="field">
           <label class="field-label">Repeat</label>
           <div class="chip-group" id="task-recurrence">
             ${RECURRENCE_OPTIONS.map(r => `<div class="chip${(t.recurrence || 'None') === r ? ' selected' : ''}" onclick="selectChip('task-recurrence','${r}', this)">${r}</div>`).join('')}
@@ -2050,6 +2068,7 @@ async function saveTaskForm() {
     completedAt: '',
     completedDays: '',
     createdDate: new Date().toISOString(),
+    scheduledTime: document.getElementById('task-scheduled-time')?.value || '',
   };
 
   if (task.status === 'Completed') {
