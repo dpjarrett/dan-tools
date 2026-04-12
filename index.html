@@ -1123,6 +1123,14 @@ async function loadTasks() {
         t.status = 'Not Started';
         needsSave = true;
       }
+      // Clean stale day-name entries from completedDays (only keep YYYY-MM-DD dates)
+      if (isRecurring(t) && t.completedDays) {
+        const cleaned = t.completedDays.split(',').map(d => d.trim()).filter(d => isDateStr(d)).join(',');
+        if (cleaned !== t.completedDays) {
+          t.completedDays = cleaned;
+          needsSave = true;
+        }
+      }
     });
     if (needsSave) await saveTasks();
   } catch(e) {
@@ -1174,25 +1182,48 @@ async function saveCategories() {
   }
 }
 
-async function saveTasks(tasks) {
-  if (!tasks) tasks = state.tasks;
-  const values = tasks.map(t => [
-    t.name, t.time, t.category, t.priority, t.dependencies, t.status, t.day, t.completedAt, t.createdDate, t.recurrence || 'None', t.completedDays || '', t.scheduledTime || ''
-  ]);
-  // Clear existing data and write all
-  try {
-    await gapi.client.sheets.spreadsheets.values.clear({
-      spreadsheetId: state.spreadsheetId, range: 'Tasks!A2:L1000'
-    });
-  } catch(e) {}
+let _savePromise = null;
+let _saveQueued = false;
 
-  if (values.length > 0) {
-    await gapi.client.sheets.spreadsheets.values.update({
-      spreadsheetId: state.spreadsheetId,
-      range: `Tasks!A2:L${values.length + 1}`,
-      valueInputOption: 'RAW',
-      resource: { values }
-    });
+async function saveTasks(tasks) {
+  // If a save is already in flight, queue one follow-up save (coalesced)
+  if (_savePromise) {
+    _saveQueued = true;
+    return _savePromise;
+  }
+
+  async function _doSave() {
+    const t = tasks || state.tasks;
+    const values = t.map(t => [
+      t.name, t.time, t.category, t.priority, t.dependencies, t.status, t.day, t.completedAt, t.createdDate, t.recurrence || 'None', t.completedDays || '', t.scheduledTime || ''
+    ]);
+    // Clear existing data and write all
+    try {
+      await gapi.client.sheets.spreadsheets.values.clear({
+        spreadsheetId: state.spreadsheetId, range: 'Tasks!A2:L1000'
+      });
+    } catch(e) {}
+
+    if (values.length > 0) {
+      await gapi.client.sheets.spreadsheets.values.update({
+        spreadsheetId: state.spreadsheetId,
+        range: `Tasks!A2:L${values.length + 1}`,
+        valueInputOption: 'RAW',
+        resource: { values }
+      });
+    }
+  }
+
+  _savePromise = _doSave();
+  try {
+    await _savePromise;
+  } finally {
+    _savePromise = null;
+    // If another save was requested while we were busy, run it now
+    if (_saveQueued) {
+      _saveQueued = false;
+      return saveTasks();
+    }
   }
 }
 
@@ -1343,12 +1374,9 @@ function isTaskCompletedOnDay(task, dateStr) {
   if (!isRecurring(task)) {
     return task.status === 'Completed';
   }
-  // For recurring tasks, check completedDays (may contain date strings or day names)
+  // For recurring tasks, check completedDays — only match exact date strings (YYYY-MM-DD)
   const days = (task.completedDays || '').split(',').map(d => d.trim()).filter(Boolean);
-  if (days.includes(dateStr)) return true;
-  // Backward compat: also check day name
-  const dayName = isDateStr(dateStr) ? dateStrToDayName(dateStr) : dateStr;
-  return days.includes(dayName);
+  return days.includes(dateStr);
 }
 
 function taskAppliesOnDay(task, dateStr) {
@@ -1653,8 +1681,8 @@ function renderTriageSection() {
     const t = state.tasks[idx];
     html += `<div class="triage-task">
       <div class="task-name">${escHtml(t.name)}</div>
-      <input type="date" class="triage-date-input" value="${getTodayStr()}" onchange="rescheduleTask(${idx}, this.value)">
-      <button class="triage-done-btn" onclick="rescheduleTask(${idx}, this.previousElementSibling.value)">Assign</button>
+      <input type="date" class="triage-date-input" value="${getTodayStr()}" id="triage-date-${idx}">
+      <button class="triage-done-btn" onclick="rescheduleTask(${idx}, document.getElementById('triage-date-${idx}').value)">Assign</button>
     </div>`;
   });
   html += '</div></div>';
@@ -2094,12 +2122,19 @@ async function toggleTask(idx) {
 }
 
 
+let _rescheduleInFlight = false;
 async function rescheduleTask(idx, newDate) {
-  state.tasks[idx].day = newDate;
-  state.triageTasks = state.triageTasks.filter(i => i !== idx);
-  render();
-  await saveTasks();
-  toast('Task rescheduled');
+  if (_rescheduleInFlight) return; // prevent double-fire
+  _rescheduleInFlight = true;
+  try {
+    state.tasks[idx].day = newDate;
+    state.triageTasks = state.triageTasks.filter(i => i !== idx);
+    render();
+    await saveTasks();
+    toast('Task rescheduled');
+  } finally {
+    _rescheduleInFlight = false;
+  }
 }
 
 async function saveTaskForm() {
