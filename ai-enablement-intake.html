@@ -117,8 +117,6 @@
   .form-section:nth-child(3) { animation-delay: 0.1s; }
   .form-section:nth-child(4) { animation-delay: 0.15s; }
   .form-section:nth-child(5) { animation-delay: 0.2s; }
-  .form-section:nth-child(6) { animation-delay: 0.25s; }
-  .form-section:nth-child(7) { animation-delay: 0.3s; }
 
   .section-label {
     font-size: 10px;
@@ -207,42 +205,6 @@
     cursor: pointer;
   }
 
-  .checkbox-group, .radio-group {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .checkbox-item, .radio-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    cursor: pointer;
-    padding: 8px 10px;
-    border-radius: 6px;
-    transition: background 0.15s;
-  }
-
-  .checkbox-item:hover, .radio-item:hover {
-    background: var(--sand);
-  }
-
-  .checkbox-item input[type="checkbox"],
-  .radio-item input[type="radio"] {
-    width: 18px;
-    height: 18px;
-    margin-top: 2px;
-    accent-color: var(--blue);
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-
-  .checkbox-item span, .radio-item span {
-    font-size: 14px;
-    color: var(--ink);
-    line-height: 1.4;
-  }
-
   .row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -272,7 +234,7 @@
   .submit-wrap {
     text-align: center;
     margin-top: 32px;
-    animation: fadeUp 0.8s ease-out 0.35s both;
+    animation: fadeUp 0.8s ease-out 0.25s both;
   }
 
   .submit-btn {
@@ -427,16 +389,16 @@
       </div>
     </div>
 
-    <!-- SECTION 2: WHAT THE BUSINESS DOES -->
+    <!-- SECTION 2: YOUR BUSINESS -->
     <div class="form-section">
       <div class="section-label">02</div>
       <div class="section-title">What Does Your Business Do?</div>
-      <p class="section-desc">Help me understand your world so I know what "good" looks like for you.</p>
+      <p class="section-desc">A couple sentences so I understand your world before we talk.</p>
       <div class="field" data-required>
-        <label>Describe your business in a few sentences
-          <span class="hint">Industry, what you sell, who you serve</span>
+        <label>Describe your business
+          <span class="hint">Industry, what you sell or do, who you serve</span>
         </label>
-        <textarea name="business_description" placeholder="e.g. We're a commercial landscaping company in Sacramento. We maintain business parks and HOAs — mowing, irrigation, seasonal cleanup. We have 12 crew members and 3 office staff."></textarea>
+        <textarea name="business_description" placeholder="e.g. We're a commercial landscaping company in Sacramento. We maintain business parks and HOAs — mowing, irrigation, seasonal cleanup. 12 crew members and 3 office staff."></textarea>
         <div class="error-text">Required</div>
       </div>
     </div>
@@ -444,140 +406,50 @@
     <!-- SECTION 3: THE TASK -->
     <div class="form-section">
       <div class="section-label">03</div>
-      <div class="section-title">The Task You Want Off Your Plate</div>
-      <p class="section-desc">This is the important part. Don't worry about sounding technical — just describe it like you would to a friend.</p>
+      <div class="section-title">What's Eating Your Time?</div>
+      <p class="section-desc">Don't overthink it — just describe it like you would to a friend.</p>
       <div class="field" data-required>
-        <label>What's the task, process, or project you want help with?
+        <label>What's the task you want help with?
           <span class="hint">The thing that takes too long, gets repeated, or you wish would just do itself</span>
         </label>
-        <textarea name="task_description" placeholder="e.g. Every Monday I spend 3 hours writing individual follow-up emails to leads from last week's quotes. I have to check our CRM, look up what we quoted, and write something personal..."></textarea>
+        <textarea name="task_description" placeholder="e.g. Every Monday I spend 3 hours writing individual follow-up emails to leads from last week's quotes. I have to check our CRM, look up what we quoted, and write something personal for each one."></textarea>
         <div class="error-text">Required</div>
         <div class="example-box">
-          <strong>Good examples:</strong> "Writing weekly team updates," "Responding to customer review emails," "Summarizing meeting notes into action items," "Creating social media captions from product photos," "Pulling key data from invoices into a spreadsheet."
+          <strong>Good examples:</strong> "Writing weekly team updates," "Responding to customer review emails," "Summarizing meeting notes into action items," "Creating social media captions," "Pulling data from invoices into a spreadsheet."
         </div>
       </div>
-      <div class="field">
-        <label>Walk me through how you currently do it
-          <span class="hint">Step by step, however you'd explain it to someone new</span>
-        </label>
-        <textarea name="current_process" placeholder="e.g. I open the CRM, filter by 'quote sent last week,' copy each name and what we quoted into a notepad, then draft each email one at a time in Gmail..."></textarea>
-      </div>
-      <div class="field">
-        <label>How often does this come up?</label>
-        <select name="frequency">
-          <option value="">Select...</option>
-          <option>Multiple times a day</option>
-          <option>Every day</option>
-          <option>A few times a week</option>
-          <option>Weekly</option>
-          <option>Every couple weeks</option>
-          <option>Monthly</option>
-          <option>Just here and there</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>How much time does it take you each time?</label>
-        <select name="time_spent">
-          <option value="">Select...</option>
-          <option>Under 15 minutes</option>
-          <option>15–30 minutes</option>
-          <option>30 minutes – 1 hour</option>
-          <option>1–2 hours</option>
-          <option>2–4 hours</option>
-          <option>Half a day or more</option>
-          <option>Full day+</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- SECTION 4: THE OUTCOME -->
-    <div class="form-section">
-      <div class="section-label">04</div>
-      <div class="section-title">What Does "Done Right" Look Like?</div>
-      <p class="section-desc">Help me picture the end result you want.</p>
-      <div class="field" data-required>
-        <label>What's the ideal output or result?
-          <span class="hint">What do you want to end up with when this is done?</span>
-        </label>
-        <textarea name="ideal_output" placeholder="e.g. A draft email for each lead, ready for me to review and send — personal enough that it doesn't sound like a template, but fast enough that I'm not spending my Monday on it."></textarea>
-        <div class="error-text">Required</div>
-      </div>
-      <div class="field">
-        <label>Do you have examples of "this looks great" you can share?
-          <span class="hint">Past work, templates, a style you like — anything I can use as a reference</span>
-        </label>
-        <textarea name="examples" placeholder="e.g. I have a folder of my best follow-up emails from the past year I could send you. Or you can look at our website voice — that's the tone I want."></textarea>
-      </div>
-      <div class="field">
-        <label>Anything it absolutely should or shouldn't do?
-          <span class="hint">Tone, words to avoid, rules to follow, brand requirements</span>
-        </label>
-        <textarea name="constraints" placeholder="e.g. Never use 'circle back' or 'touch base.' Always include our phone number. Don't mention price unless they asked. Keep it under 150 words."></textarea>
-      </div>
-    </div>
-
-    <!-- SECTION 5: YOUR DATA & TOOLS -->
-    <div class="form-section">
-      <div class="section-label">05</div>
-      <div class="section-title">What You're Working With</div>
-      <p class="section-desc">So I know what kind of information AI will need to do this well.</p>
-      <div class="field">
-        <label>What information does AI need to do this task?
-          <span class="hint">Customer lists, documents, spreadsheets, past emails, product info — what would you hand a new employee to teach them this?</span>
-        </label>
-        <textarea name="required_info" placeholder="e.g. The lead's name, what we quoted, when the quote was sent, and any notes from the site visit. All of this lives in our CRM."></textarea>
-      </div>
-      <div class="field">
-        <label>Where does that information live right now?</label>
-        <div class="checkbox-group">
-          <label class="checkbox-item"><input type="checkbox" name="data_sources" value="Email (Gmail/Outlook)"><span>Email (Gmail/Outlook)</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="data_sources" value="Spreadsheets (Excel/Google Sheets)"><span>Spreadsheets (Excel/Google Sheets)</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="data_sources" value="Word/Google Docs"><span>Word or Google Docs</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="data_sources" value="CRM (Salesforce, HubSpot, etc.)"><span>A CRM like Salesforce or HubSpot</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="data_sources" value="Project management tool"><span>A project tool (Asana, Monday, ClickUp, etc.)</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="data_sources" value="Accounting software"><span>Accounting software (QuickBooks, Xero, etc.)</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="data_sources" value="Paper files"><span>Paper files or physical notes</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="data_sources" value="In my head"><span>Honestly, mostly in my head</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="data_sources" value="Other"><span>Somewhere else</span></label>
+      <div class="row">
+        <div class="field">
+          <label>How often does this come up?</label>
+          <select name="frequency">
+            <option value="">Select...</option>
+            <option>Multiple times a day</option>
+            <option>Every day</option>
+            <option>A few times a week</option>
+            <option>Weekly</option>
+            <option>Every couple weeks</option>
+            <option>Monthly</option>
+            <option>Just here and there</option>
+          </select>
         </div>
-      </div>
-      <div class="field">
-        <label>If "somewhere else," where?</label>
-        <input type="text" name="data_sources_other" placeholder="e.g. Shopify, our custom software, a Slack channel...">
-      </div>
-    </div>
-
-    <!-- SECTION 6: YOU & YOUR TEAM -->
-    <div class="form-section">
-      <div class="section-label">06</div>
-      <div class="section-title">You &amp; Your Team</div>
-      <p class="section-desc">Last few questions to help me tailor this to you, not some generic playbook.</p>
-      <div class="field">
-        <label>Have you used AI tools before? (Totally fine if not.)</label>
-        <div class="radio-group">
-          <label class="radio-item"><input type="radio" name="ai_experience" value="Never used it"><span>Never used it — this is all new</span></label>
-          <label class="radio-item"><input type="radio" name="ai_experience" value="Tried it a few times"><span>Tried it a few times but didn't stick</span></label>
-          <label class="radio-item"><input type="radio" name="ai_experience" value="Use it occasionally"><span>I use it occasionally</span></label>
-          <label class="radio-item"><input type="radio" name="ai_experience" value="Use it regularly"><span>I use it regularly</span></label>
+        <div class="field">
+          <label>How long does it take each time?</label>
+          <select name="time_spent">
+            <option value="">Select...</option>
+            <option>Under 15 minutes</option>
+            <option>15–30 minutes</option>
+            <option>30 minutes – 1 hour</option>
+            <option>1–2 hours</option>
+            <option>2–4 hours</option>
+            <option>Half a day or more</option>
+          </select>
         </div>
-      </div>
-      <div class="field">
-        <label>Who else on your team might use this?
-          <span class="hint">Names and roles help me build it for the actual people using it</span>
-        </label>
-        <textarea name="team_users" placeholder="e.g. Me, my office manager Sarah, and my sales guy Mike. Sarah is great with tech, Mike is not."></textarea>
-      </div>
-      <div class="field">
-        <label>What would be a big win for you 30 days from now?
-          <span class="hint">Time saved, hours back, a specific thing running smoother</span>
-        </label>
-        <textarea name="big_win" placeholder="e.g. I get my Mondays back. Instead of 3 hours on emails, it takes 20 minutes and I can focus on walking jobs."></textarea>
       </div>
       <div class="field">
         <label>Anything else I should know?
-          <span class="hint">Concerns, questions, other things you're trying to automate — whatever's on your mind</span>
+          <span class="hint">Other tasks on your mind, questions, concerns — whatever you want to share</span>
         </label>
-        <textarea name="anything_else" placeholder=""></textarea>
+        <textarea name="anything_else" placeholder="" style="min-height:80px;"></textarea>
       </div>
     </div>
 
@@ -641,11 +513,9 @@ form.addEventListener("submit", async function(e) {
   const data = {};
 
   for (const [key, value] of formData.entries()) {
-    if (key === "data_sources") continue;
     data[key] = value;
   }
 
-  data.data_sources = [...form.querySelectorAll('input[name="data_sources"]:checked')].map(cb => cb.value).join(", ");
   data.submitted_at = new Date().toISOString();
 
   try {
