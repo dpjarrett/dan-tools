@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Next Level Solutions — AI Onboarding Intake</title>
+<title>Next Level Solutions — Let's Save You Some Time</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -16,76 +16,395 @@
     --white: #FFFFFF;
     --radius: 10px;
   }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--sand); color: var(--ink); min-height: 100vh; line-height: 1.6; }
-  .noise { position: fixed; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.03; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); pointer-events: none; z-index: 0; }
-  .container { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 40px 24px 80px; }
-  .header { text-align: center; margin-bottom: 48px; animation: fadeUp 0.8s ease-out; }
-  .header .brand { font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--slate); margin-bottom: 16px; }
-  .header h1 { font-family: 'Playfair Display', serif; font-size: clamp(28px, 5vw, 40px); font-weight: 700; color: var(--ink); line-height: 1.2; margin-bottom: 12px; }
-  .header p { font-size: 15px; color: var(--slate); max-width: 480px; margin: 0 auto; }
-  .divider { width: 60px; height: 3px; background: var(--accent); margin: 20px auto; border-radius: 2px; }
-  .form-section { background: var(--white); border-radius: var(--radius); padding: 32px 28px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.03); animation: fadeUp 0.8s ease-out both; }
-  .form-section:nth-child(2) { animation-delay: 0.1s; }
-  .form-section:nth-child(3) { animation-delay: 0.15s; }
-  .form-section:nth-child(4) { animation-delay: 0.2s; }
-  .form-section:nth-child(5) { animation-delay: 0.25s; }
-  .form-section:nth-child(6) { animation-delay: 0.3s; }
-  .section-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 4px; }
-  .section-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600; margin-bottom: 20px; color: var(--ink); }
-  .field { margin-bottom: 20px; }
-  .field:last-child { margin-bottom: 0; }
-  label { display: block; font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 6px; }
-  label .hint { font-weight: 400; color: var(--slate); font-size: 12px; display: block; margin-top: 2px; }
-  input[type="text"], input[type="email"], input[type="tel"], input[type="url"], textarea, select { width: 100%; padding: 12px 14px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink); background: var(--sand); border: 1.5px solid var(--fog); border-radius: 8px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
-  input:focus, textarea:focus, select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.08); }
-  textarea { min-height: 90px; resize: vertical; }
-  select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 40px; cursor: pointer; }
-  .checkbox-group { display: flex; flex-direction: column; gap: 10px; }
-  .checkbox-item { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
-  .checkbox-item input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--blue); cursor: pointer; flex-shrink: 0; }
-  .checkbox-item span { font-size: 14px; color: var(--ink); line-height: 1.4; }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
-  .submit-wrap { text-align: center; margin-top: 32px; animation: fadeUp 0.8s ease-out 0.35s both; }
-  .submit-btn { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--white); background: var(--ink); border: none; padding: 16px 48px; border-radius: 50px; cursor: pointer; transition: background 0.3s, transform 0.2s; }
-  .submit-btn:hover { background: var(--blue); transform: translateY(-1px); }
-  .submit-btn:active { transform: translateY(0); }
-  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-  .submit-note { font-size: 12px; color: var(--slate); margin-top: 12px; }
-  .success-message { display: none; text-align: center; padding: 60px 24px; animation: fadeUp 0.6s ease-out; }
-  .success-message .check { width: 64px; height: 64px; border-radius: 50%; background: var(--blue); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
-  .success-message .check svg { width: 28px; height: 28px; stroke: white; stroke-width: 3; fill: none; }
-  .success-message h2 { font-family: 'Playfair Display', serif; font-size: 28px; margin-bottom: 8px; }
-  .success-message p { color: var(--slate); font-size: 15px; }
-  .field.error input, .field.error textarea, .field.error select { border-color: var(--accent); }
-  .error-text { font-size: 12px; color: var(--accent); margin-top: 4px; display: none; }
-  .field.error .error-text { display: block; }
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--sand);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  .noise {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeUp 0.8s ease-out;
+  }
+
+  .header .brand {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--slate);
+    margin-bottom: 16px;
+  }
+
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 40px);
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+
+  .header p {
+    font-size: 16px;
+    color: var(--slate);
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  .divider {
+    width: 60px;
+    height: 3px;
+    background: var(--accent);
+    margin: 20px auto;
+    border-radius: 2px;
+  }
+
+  .intro-card {
+    background: linear-gradient(135deg, var(--ink) 0%, var(--blue) 100%);
+    color: var(--white);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.8s ease-out 0.05s both;
+  }
+
+  .intro-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: var(--white);
+  }
+
+  .intro-card p {
+    font-size: 14px;
+    opacity: 0.9;
+    line-height: 1.6;
+  }
+
+  .form-section {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.03);
+    animation: fadeUp 0.8s ease-out both;
+  }
+
+  .form-section:nth-child(3) { animation-delay: 0.1s; }
+  .form-section:nth-child(4) { animation-delay: 0.15s; }
+  .form-section:nth-child(5) { animation-delay: 0.2s; }
+  .form-section:nth-child(6) { animation-delay: 0.25s; }
+  .form-section:nth-child(7) { animation-delay: 0.3s; }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--ink);
+  }
+
+  .section-desc {
+    font-size: 14px;
+    color: var(--slate);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .field {
+    margin-bottom: 20px;
+  }
+
+  .field:last-child {
+    margin-bottom: 0;
+  }
+
+  label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  label .hint {
+    font-weight: 400;
+    color: var(--slate);
+    font-size: 13px;
+    display: block;
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="url"],
+  textarea,
+  select {
+    width: 100%;
+    padding: 12px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--sand);
+    border: 1.5px solid var(--fog);
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.08);
+  }
+
+  textarea {
+    min-height: 110px;
+    resize: vertical;
+    line-height: 1.5;
+  }
+
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 40px;
+    cursor: pointer;
+  }
+
+  .checkbox-group, .radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .checkbox-item, .radio-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    padding: 8px 10px;
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+
+  .checkbox-item:hover, .radio-item:hover {
+    background: var(--sand);
+  }
+
+  .checkbox-item input[type="checkbox"],
+  .radio-item input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    accent-color: var(--blue);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .checkbox-item span, .radio-item span {
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 520px) {
+    .row { grid-template-columns: 1fr; }
+  }
+
+  .example-box {
+    background: var(--sand);
+    border-left: 3px solid var(--accent);
+    padding: 12px 14px;
+    margin-top: 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--slate);
+    line-height: 1.5;
+  }
+
+  .example-box strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .submit-wrap {
+    text-align: center;
+    margin-top: 32px;
+    animation: fadeUp 0.8s ease-out 0.35s both;
+  }
+
+  .submit-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--white);
+    background: var(--ink);
+    border: none;
+    padding: 16px 48px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+  }
+
+  .submit-btn:hover {
+    background: var(--blue);
+    transform: translateY(-1px);
+  }
+
+  .submit-btn:active {
+    transform: translateY(0);
+  }
+
+  .submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .submit-note {
+    font-size: 13px;
+    color: var(--slate);
+    margin-top: 12px;
+  }
+
+  .success-message {
+    display: none;
+    text-align: center;
+    padding: 60px 24px;
+    animation: fadeUp 0.6s ease-out;
+  }
+
+  .success-message .check {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+  }
+
+  .success-message .check svg {
+    width: 28px;
+    height: 28px;
+    stroke: white;
+    stroke-width: 3;
+    fill: none;
+  }
+
+  .success-message h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+
+  .success-message p {
+    color: var(--slate);
+    font-size: 15px;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  .field.error input,
+  .field.error textarea,
+  .field.error select {
+    border-color: var(--accent);
+  }
+
+  .error-text {
+    font-size: 12px;
+    color: var(--accent);
+    margin-top: 4px;
+    display: none;
+  }
+
+  .field.error .error-text {
+    display: block;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 </style>
 </head>
 <body>
 <div class="noise"></div>
 <div class="container">
+
   <div class="header">
     <div class="brand">Next Level Solutions</div>
-    <h1>AI Onboarding Intake</h1>
+    <h1>Let's Buy Back Some of Your Time</h1>
     <div class="divider"></div>
-    <p>Help us understand your business so we can build the right AI workspace for you and your team.</p>
+    <p>Tell me about the task that's eating your week. I'll figure out how to hand it off to AI so you can focus on what actually matters.</p>
   </div>
+
   <form id="intakeForm">
+
+    <div class="intro-card">
+      <h3>No AI experience needed.</h3>
+      <p>You don't need to know anything about ChatGPT, Claude, or prompts. Just tell me what's slowing you down in plain English — the way you'd explain it to a coworker. I'll take it from there.</p>
+    </div>
+
+    <!-- SECTION 1: ABOUT YOU -->
     <div class="form-section">
       <div class="section-label">01</div>
       <div class="section-title">About You</div>
+      <p class="section-desc">Just the basics so I know how to reach you.</p>
       <div class="row">
         <div class="field" data-required>
-          <label>Full Name</label>
-          <input type="text" name="full_name" placeholder="Your name">
+          <label>Your Name</label>
+          <input type="text" name="full_name" placeholder="First and last">
           <div class="error-text">Required</div>
         </div>
         <div class="field" data-required>
-          <label>Company Name</label>
-          <input type="text" name="company" placeholder="Your company">
+          <label>Company or Business</label>
+          <input type="text" name="company" placeholder="Where you work">
           <div class="error-text">Required</div>
         </div>
       </div>
@@ -96,193 +415,268 @@
           <div class="error-text">Valid email required</div>
         </div>
         <div class="field">
-          <label>Phone</label>
+          <label>Phone <span style="font-weight:400;color:var(--slate);">(optional)</span></label>
           <input type="tel" name="phone" placeholder="(555) 555-5555">
         </div>
       </div>
       <div class="field">
-        <label>Your Role / Title</label>
-        <input type="text" name="role" placeholder="e.g. Owner, CFO, Operations Manager">
+        <label>What do you do there?
+          <span class="hint">Owner, manager, team lead, whatever fits</span>
+        </label>
+        <input type="text" name="role" placeholder="e.g. Owner, Operations Manager, Team Lead">
       </div>
     </div>
+
+    <!-- SECTION 2: WHAT THE BUSINESS DOES -->
     <div class="form-section">
       <div class="section-label">02</div>
-      <div class="section-title">Your Business</div>
+      <div class="section-title">What Does Your Business Do?</div>
+      <p class="section-desc">Help me understand your world so I know what "good" looks like for you.</p>
       <div class="field" data-required>
-        <label>What does your company do?<span class="hint">Products, services, industry — keep it simple</span></label>
-        <textarea name="business_description" placeholder="e.g. We run a commercial HVAC company serving the Sacramento area..."></textarea>
+        <label>Describe your business in a few sentences
+          <span class="hint">Industry, what you sell, who you serve</span>
+        </label>
+        <textarea name="business_description" placeholder="e.g. We're a commercial landscaping company in Sacramento. We maintain business parks and HOAs — mowing, irrigation, seasonal cleanup. We have 12 crew members and 3 office staff."></textarea>
         <div class="error-text">Required</div>
       </div>
-      <div class="row">
-        <div class="field">
-          <label>How many employees?</label>
-          <select name="team_size"><option value="">Select...</option><option>Just me</option><option>2–5</option><option>6–15</option><option>16–50</option><option>50+</option></select>
-        </div>
-        <div class="field">
-          <label>Annual Revenue Range</label>
-          <select name="revenue_range"><option value="">Select...</option><option>Under $250K</option><option>$250K – $500K</option><option>$500K – $1M</option><option>$1M – $5M</option><option>$5M+</option><option>Prefer not to say</option></select>
-        </div>
-      </div>
-      <div class="field">
-        <label>Website (if you have one)</label>
-        <input type="url" name="website" placeholder="https://yourcompany.com">
-      </div>
     </div>
+
+    <!-- SECTION 3: THE TASK -->
     <div class="form-section">
       <div class="section-label">03</div>
-      <div class="section-title">What Are You Trying to Solve?</div>
-      <div class="field">
-        <label>What's your biggest pain point right now?<span class="hint">The thing that keeps you up at night</span></label>
-        <textarea name="pain_point" placeholder="e.g. I can't tell which jobs are profitable until it's too late..."></textarea>
+      <div class="section-title">The Task You Want Off Your Plate</div>
+      <p class="section-desc">This is the important part. Don't worry about sounding technical — just describe it like you would to a friend.</p>
+      <div class="field" data-required>
+        <label>What's the task, process, or project you want help with?
+          <span class="hint">The thing that takes too long, gets repeated, or you wish would just do itself</span>
+        </label>
+        <textarea name="task_description" placeholder="e.g. Every Monday I spend 3 hours writing individual follow-up emails to leads from last week's quotes. I have to check our CRM, look up what we quoted, and write something personal..."></textarea>
+        <div class="error-text">Required</div>
+        <div class="example-box">
+          <strong>Good examples:</strong> "Writing weekly team updates," "Responding to customer review emails," "Summarizing meeting notes into action items," "Creating social media captions from product photos," "Pulling key data from invoices into a spreadsheet."
+        </div>
       </div>
       <div class="field">
-        <label>What decisions do you wish you had better data for?</label>
-        <textarea name="decisions_needed" placeholder="e.g. Where to cut costs, which services to push, staffing levels..."></textarea>
+        <label>Walk me through how you currently do it
+          <span class="hint">Step by step, however you'd explain it to someone new</span>
+        </label>
+        <textarea name="current_process" placeholder="e.g. I open the CRM, filter by 'quote sent last week,' copy each name and what we quoted into a notepad, then draft each email one at a time in Gmail..."></textarea>
       </div>
       <div class="field">
-        <label>What would success look like 90 days from now?</label>
-        <textarea name="success_90_days" placeholder="e.g. My team runs a weekly margin report without me being involved..."></textarea>
+        <label>How often does this come up?</label>
+        <select name="frequency">
+          <option value="">Select...</option>
+          <option>Multiple times a day</option>
+          <option>Every day</option>
+          <option>A few times a week</option>
+          <option>Weekly</option>
+          <option>Every couple weeks</option>
+          <option>Monthly</option>
+          <option>Just here and there</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>How much time does it take you each time?</label>
+        <select name="time_spent">
+          <option value="">Select...</option>
+          <option>Under 15 minutes</option>
+          <option>15–30 minutes</option>
+          <option>30 minutes – 1 hour</option>
+          <option>1–2 hours</option>
+          <option>2–4 hours</option>
+          <option>Half a day or more</option>
+          <option>Full day+</option>
+        </select>
       </div>
     </div>
+
+    <!-- SECTION 4: THE OUTCOME -->
     <div class="form-section">
       <div class="section-label">04</div>
-      <div class="section-title">Your Data &amp; Tools</div>
-      <div class="field">
-        <label>What tools do you currently use to track financials?</label>
-        <div class="checkbox-group">
-          <label class="checkbox-item"><input type="checkbox" name="tools" value="QuickBooks"><span>QuickBooks</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="tools" value="Xero"><span>Xero</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="tools" value="Excel/Google Sheets"><span>Excel / Google Sheets</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="tools" value="FreshBooks"><span>FreshBooks</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="tools" value="Wave"><span>Wave</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="tools" value="Other"><span>Other</span></label>
-        </div>
+      <div class="section-title">What Does "Done Right" Look Like?</div>
+      <p class="section-desc">Help me picture the end result you want.</p>
+      <div class="field" data-required>
+        <label>What's the ideal output or result?
+          <span class="hint">What do you want to end up with when this is done?</span>
+        </label>
+        <textarea name="ideal_output" placeholder="e.g. A draft email for each lead, ready for me to review and send — personal enough that it doesn't sound like a template, but fast enough that I'm not spending my Monday on it."></textarea>
+        <div class="error-text">Required</div>
       </div>
       <div class="field">
-        <label>If other, what tools?</label>
-        <input type="text" name="tools_other" placeholder="e.g. SAP, NetSuite, custom software...">
+        <label>Do you have examples of "this looks great" you can share?
+          <span class="hint">Past work, templates, a style you like — anything I can use as a reference</span>
+        </label>
+        <textarea name="examples" placeholder="e.g. I have a folder of my best follow-up emails from the past year I could send you. Or you can look at our website voice — that's the tone I want."></textarea>
       </div>
       <div class="field">
-        <label>Can you export your data as CSV, Excel, or PDF?</label>
-        <select name="can_export"><option value="">Select...</option><option>Yes</option><option>I think so</option><option>Not sure</option><option>No</option></select>
-      </div>
-      <div class="field">
-        <label>What data do you already have available?<span class="hint">Check all that apply</span></label>
-        <div class="checkbox-group">
-          <label class="checkbox-item"><input type="checkbox" name="data_available" value="P&L / Income Statement"><span>P&amp;L / Income Statement</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="data_available" value="Balance Sheet"><span>Balance Sheet</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="data_available" value="Sales Pipeline / CRM"><span>Sales Pipeline / CRM</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="data_available" value="Job Costing / Project Tracking"><span>Job Costing / Project Tracking</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="data_available" value="Payroll / Labor Costs"><span>Payroll / Labor Costs</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="data_available" value="Inventory"><span>Inventory</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="data_available" value="Customer List"><span>Customer List</span></label>
-        </div>
+        <label>Anything it absolutely should or shouldn't do?
+          <span class="hint">Tone, words to avoid, rules to follow, brand requirements</span>
+        </label>
+        <textarea name="constraints" placeholder="e.g. Never use 'circle back' or 'touch base.' Always include our phone number. Don't mention price unless they asked. Keep it under 150 words."></textarea>
       </div>
     </div>
+
+    <!-- SECTION 5: YOUR DATA & TOOLS -->
     <div class="form-section">
       <div class="section-label">05</div>
-      <div class="section-title">Margins &amp; Metrics</div>
+      <div class="section-title">What You're Working With</div>
+      <p class="section-desc">So I know what kind of information AI will need to do this well.</p>
       <div class="field">
-        <label>Do you currently track profit margins?</label>
-        <select name="tracks_margins"><option value="">Select...</option><option>Yes, closely</option><option>Somewhat — I know the big picture</option><option>Not really</option><option>No idea where we stand</option></select>
+        <label>What information does AI need to do this task?
+          <span class="hint">Customer lists, documents, spreadsheets, past emails, product info — what would you hand a new employee to teach them this?</span>
+        </label>
+        <textarea name="required_info" placeholder="e.g. The lead's name, what we quoted, when the quote was sent, and any notes from the site visit. All of this lives in our CRM."></textarea>
       </div>
       <div class="field">
-        <label>What margin targets are you trying to hit?<span class="hint">Gross margin, net margin, per-project margin — whatever matters to you</span></label>
-        <textarea name="margin_targets" placeholder="e.g. We want 40% gross margin on installs, 25% net overall..."></textarea>
-      </div>
-      <div class="field">
-        <label>What KPIs matter most to your business?<span class="hint">Check all that apply</span></label>
+        <label>Where does that information live right now?</label>
         <div class="checkbox-group">
-          <label class="checkbox-item"><input type="checkbox" name="kpis" value="Gross Margin"><span>Gross Margin</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="kpis" value="Net Profit Margin"><span>Net Profit Margin</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="kpis" value="Revenue Growth"><span>Revenue Growth</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="kpis" value="Close Rate"><span>Close Rate / Sales Conversion</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="kpis" value="Customer Acquisition Cost"><span>Customer Acquisition Cost</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="kpis" value="Labor Cost %"><span>Labor Cost as % of Revenue</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="kpis" value="Cash Flow"><span>Cash Flow</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="kpis" value="Job Profitability"><span>Job / Project Profitability</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="data_sources" value="Email (Gmail/Outlook)"><span>Email (Gmail/Outlook)</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="data_sources" value="Spreadsheets (Excel/Google Sheets)"><span>Spreadsheets (Excel/Google Sheets)</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="data_sources" value="Word/Google Docs"><span>Word or Google Docs</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="data_sources" value="CRM (Salesforce, HubSpot, etc.)"><span>A CRM like Salesforce or HubSpot</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="data_sources" value="Project management tool"><span>A project tool (Asana, Monday, ClickUp, etc.)</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="data_sources" value="Accounting software"><span>Accounting software (QuickBooks, Xero, etc.)</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="data_sources" value="Paper files"><span>Paper files or physical notes</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="data_sources" value="In my head"><span>Honestly, mostly in my head</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="data_sources" value="Other"><span>Somewhere else</span></label>
         </div>
       </div>
+      <div class="field">
+        <label>If "somewhere else," where?</label>
+        <input type="text" name="data_sources_other" placeholder="e.g. Shopify, our custom software, a Slack channel...">
+      </div>
     </div>
+
+    <!-- SECTION 6: YOU & YOUR TEAM -->
     <div class="form-section">
       <div class="section-label">06</div>
-      <div class="section-title">Team &amp; Readiness</div>
+      <div class="section-title">You &amp; Your Team</div>
+      <p class="section-desc">Last few questions to help me tailor this to you, not some generic playbook.</p>
       <div class="field">
-        <label>Who on your team would use this?<span class="hint">Names, roles — whoever would touch the AI tools</span></label>
-        <textarea name="team_users" placeholder="e.g. Me (owner), Sarah (bookkeeper), Mike (sales manager)..."></textarea>
+        <label>Have you used AI tools before? (Totally fine if not.)</label>
+        <div class="radio-group">
+          <label class="radio-item"><input type="radio" name="ai_experience" value="Never used it"><span>Never used it — this is all new</span></label>
+          <label class="radio-item"><input type="radio" name="ai_experience" value="Tried it a few times"><span>Tried it a few times but didn't stick</span></label>
+          <label class="radio-item"><input type="radio" name="ai_experience" value="Use it occasionally"><span>I use it occasionally</span></label>
+          <label class="radio-item"><input type="radio" name="ai_experience" value="Use it regularly"><span>I use it regularly</span></label>
+        </div>
       </div>
       <div class="field">
-        <label>How comfortable is your team with technology?</label>
-        <select name="tech_comfort"><option value="">Select...</option><option>Very comfortable — we adopt new tools quickly</option><option>Moderate — we can learn but need guidance</option><option>Low — this would be a big change for us</option></select>
+        <label>Who else on your team might use this?
+          <span class="hint">Names and roles help me build it for the actual people using it</span>
+        </label>
+        <textarea name="team_users" placeholder="e.g. Me, my office manager Sarah, and my sales guy Mike. Sarah is great with tech, Mike is not."></textarea>
       </div>
       <div class="field">
-        <label>Have you or your team used AI tools before? (ChatGPT, Claude, etc.)</label>
-        <select name="ai_experience"><option value="">Select...</option><option>Yes, regularly</option><option>A little — I've tried it</option><option>No, this would be our first time</option></select>
+        <label>What would be a big win for you 30 days from now?
+          <span class="hint">Time saved, hours back, a specific thing running smoother</span>
+        </label>
+        <textarea name="big_win" placeholder="e.g. I get my Mondays back. Instead of 3 hours on emails, it takes 20 minutes and I can focus on walking jobs."></textarea>
       </div>
       <div class="field">
-        <label>Anything else we should know?<span class="hint">Timeline, concerns, budget, other projects — whatever's on your mind</span></label>
+        <label>Anything else I should know?
+          <span class="hint">Concerns, questions, other things you're trying to automate — whatever's on your mind</span>
+        </label>
         <textarea name="anything_else" placeholder=""></textarea>
       </div>
     </div>
+
     <div class="submit-wrap">
-      <button type="submit" class="submit-btn" id="submitBtn">Submit</button>
-      <p class="submit-note">We'll review your info and reach out within 24 hours.</p>
+      <button type="submit" class="submit-btn" id="submitBtn">Send It</button>
+      <p class="submit-note">I'll review and get back to you within 24 hours.</p>
     </div>
+
   </form>
+
   <div class="success-message" id="successMsg">
-    <div class="check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-    <h2>You're all set.</h2>
-    <p>We've got your info. Dan will be in touch within 24 hours to talk next steps.</p>
+    <div class="check">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    </div>
+    <h2>Got it. Talk soon.</h2>
+    <p>I'll review everything you shared and reach out within 24 hours to set up a quick call. Thanks for trusting me with this.</p>
   </div>
+
 </div>
+
 <script>
+// ============================================
+// SETUP: Replace this URL with your Google Apps Script web app URL
+// ============================================
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuxZMZoJY0rxXwD13On7zCAlZqN5Utp3zfo93SFnBNknUTSfEgkRZgo1If4xQZF4Jq/exec";
-const IS_DEMO = (GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE");
+
 const form = document.getElementById("intakeForm");
 const submitBtn = document.getElementById("submitBtn");
 const successMsg = document.getElementById("successMsg");
+
 form.addEventListener("submit", async function(e) {
   e.preventDefault();
+
   let valid = true;
   form.querySelectorAll("[data-required]").forEach(field => {
     const input = field.querySelector("input, textarea, select");
-    if (!input.value.trim()) { field.classList.add("error"); valid = false; }
-    else { field.classList.remove("error"); }
+    if (!input.value.trim()) {
+      field.classList.add("error");
+      valid = false;
+    } else {
+      field.classList.remove("error");
+    }
   });
+
   const emailField = form.querySelector('[name="email"]');
   if (emailField.value && !emailField.value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-    emailField.closest(".field").classList.add("error"); valid = false;
+    emailField.closest(".field").classList.add("error");
+    valid = false;
   }
-  if (!valid) { const firstError = form.querySelector(".field.error"); if (firstError) firstError.scrollIntoView({ behavior: "smooth", block: "center" }); return; }
+
+  if (!valid) {
+    const firstError = form.querySelector(".field.error");
+    if (firstError) firstError.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+
   submitBtn.disabled = true;
   submitBtn.textContent = "SENDING...";
+
   const formData = new FormData(form);
   const data = {};
+
   for (const [key, value] of formData.entries()) {
-    if (key === "tools" || key === "data_available" || key === "kpis") continue;
+    if (key === "data_sources") continue;
     data[key] = value;
   }
-  data.tools = [...form.querySelectorAll('input[name="tools"]:checked')].map(cb => cb.value).join(", ");
-  data.data_available = [...form.querySelectorAll('input[name="data_available"]:checked')].map(cb => cb.value).join(", ");
-  data.kpis = [...form.querySelectorAll('input[name="kpis"]:checked')].map(cb => cb.value).join(", ");
+
+  data.data_sources = [...form.querySelectorAll('input[name="data_sources"]:checked')].map(cb => cb.value).join(", ");
   data.submitted_at = new Date().toISOString();
+
   try {
-    if (!IS_DEMO) {
-      await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+    if (GOOGLE_SCRIPT_URL !== "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
     } else {
-      console.log("DEMO MODE - Form data:", JSON.stringify(data, null, 2));
+      console.log("Form data (connect Google Apps Script to send):", data);
     }
+
     form.style.display = "none";
+    document.querySelector(".intro-card").style.display = "none";
     successMsg.style.display = "block";
     window.scrollTo({ top: 0, behavior: "smooth" });
+
   } catch (err) {
     console.error("Submission error:", err);
     submitBtn.disabled = false;
-    submitBtn.textContent = "SUBMIT";
-    alert("Something went wrong. Please try again or email Dan directly at dan@trynextlevel.com.");
+    submitBtn.textContent = "SEND IT";
+    alert("Something went wrong. Please try again or contact Dan directly.");
   }
 });
-form.addEventListener("input", function(e) { const field = e.target.closest(".field"); if (field) field.classList.remove("error"); });
+
+form.addEventListener("input", function(e) {
+  const field = e.target.closest(".field");
+  if (field) field.classList.remove("error");
+});
 </script>
 </body>
 </html>
