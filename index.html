@@ -512,7 +512,7 @@ body {
   font-weight: 700;
 }
 
-.modal-body { padding: 20px; }
+.modal-body { padding: 20px; overflow-x: hidden; }
 
 /* Form fields */
 .field { margin-bottom: 16px; }
@@ -526,6 +526,7 @@ body {
 
 .field-input {
   width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -536,6 +537,8 @@ body {
   font-family: inherit;
   outline: none;
   transition: border-color 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .field-input:focus { border-color: var(--accent); }
@@ -929,7 +932,7 @@ textarea.field-input { resize: vertical; min-height: 80px; }
 // Weekly Task Planner — PWA + Google Sheets
 // ============================================
 
-const APP_VERSION = '1.4.6';
+const APP_VERSION = '1.4.7';
 const CLIENT_ID = '80439686719-sbus2kg78uj5s4s6b7ctvng0eii16fek.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
