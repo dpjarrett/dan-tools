@@ -2176,6 +2176,7 @@ async function deleteTask(idx) {
   if (!confirm(`Delete "${t.name}"?`)) return;
   state.tasks.splice(idx, 1);
   state.triageTasks = state.triageTasks.filter(i => i !== idx).map(i => i > idx ? i - 1 : i);
+  render();
   toast('Task deleted');
   saveTasks();
 }
@@ -2186,6 +2187,7 @@ async function rescheduleTask(idx, newDate) {
   _rescheduleInFlight = true;
   state.tasks[idx].day = newDate;
   state.triageTasks = state.triageTasks.filter(i => i !== idx);
+  render();
   toast('Task rescheduled');
   saveTasks().finally(() => { _rescheduleInFlight = false; });
 }
