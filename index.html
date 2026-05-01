@@ -925,7 +925,7 @@ textarea.field-input { resize: vertical; min-height: 80px; }
 // Weekly Task Planner — PWA + Google Sheets
 // ============================================
 
-const APP_VERSION = '1.3.9';
+const APP_VERSION = '1.4.0';
 const CLIENT_ID = '80439686719-sbus2kg78uj5s4s6b7ctvng0eii16fek.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
@@ -2373,14 +2373,18 @@ function closePlanIfBg(e) {
 }
 
 async function refreshData() {
-  state.loading = true;
-  render();
-  await loadTasks();
-  await loadCategories();
-  findOverdueTasks();
-  state.loading = false;
-  render();
-  toast('Refreshed');
+  // Clear all service worker caches
+  if ('caches' in window) {
+    const keys = await caches.keys();
+    await Promise.all(keys.map(k => caches.delete(k)));
+  }
+  // Unregister service worker so it re-installs fresh
+  if ('serviceWorker' in navigator) {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(r => r.unregister()));
+  }
+  // Hard reload from network
+  location.reload(true);
 }
 
 function escHtml(str) {
