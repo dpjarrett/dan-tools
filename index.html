@@ -878,6 +878,7 @@ textarea.field-input { resize: vertical; min-height: 80px; }
 // Weekly Task Planner — PWA + Google Sheets
 // ============================================
 
+const APP_VERSION = '1.0.0';
 const CLIENT_ID = '80439686719-sbus2kg78uj5s4s6b7ctvng0eii16fek.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
@@ -1628,6 +1629,7 @@ function renderAuthScreen() {
 function renderHeader() {
   return `<div class="app-header">
     <h1>Planner</h1>
+    <span style="font-size:11px;color:var(--text-muted);margin-left:8px;align-self:center">v${APP_VERSION}</span>
     <div class="header-actions">
       <button class="btn-icon" onclick="refreshData()" title="Refresh">${ICONS.refresh}</button>
       <button class="btn-icon" onclick="openSettings()" title="Settings">${ICONS.settings}</button>
