@@ -878,7 +878,7 @@ textarea.field-input { resize: vertical; min-height: 80px; }
 // Weekly Task Planner — PWA + Google Sheets
 // ============================================
 
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.0.1';
 const CLIENT_ID = '80439686719-sbus2kg78uj5s4s6b7ctvng0eii16fek.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
@@ -1507,7 +1507,8 @@ function toast(msg, duration = 3000) {
   clearTimeout(state.toastTimer);
   state.toastTimer = setTimeout(() => {
     state.toastMsg = '';
-    render();
+    const el = document.querySelector('.toast');
+    if (el) el.remove();
   }, duration);
 }
 
