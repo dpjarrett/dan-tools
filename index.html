@@ -19,15 +19,15 @@
   --text: #e4e4e7;
   --text-secondary: #a1a1aa;
   --text-muted: #5a5e5a;
-  --accent: #4ade80;
-  --accent-dim: #1a3a2a;
+  --accent: #5b8def;
+  --accent-dim: #1e2d4a;
   --cat-business: #60a5fa;
   --cat-bayside: #2dd4bf;
   --cat-personal: #4ade80;
   --cat-other: #71717a;
   --danger: #f87171;
   --warning: #fbbf24;
-  --success: #4ade80;
+  --success: #22c55e;
   --radius: 12px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -317,7 +317,7 @@ body {
 
 .badge-business { background: rgba(96,165,250,0.15); color: var(--cat-business); }
 .badge-bayside { background: rgba(45,212,191,0.15); color: var(--cat-bayside); }
-.badge-personal { background: rgba(74,222,128,0.15); color: var(--cat-personal); }
+.badge-personal { background: rgba(74,222,128,0.12); color: var(--cat-personal); }
 .badge-other { background: rgba(113,113,122,0.15); color: var(--cat-other); }
 .badge-custom { background: rgba(167,139,250,0.15); color: #a78bfa; }
 
@@ -531,7 +531,7 @@ textarea.field-input { resize: vertical; min-height: 80px; }
 
 .chip.cat-business.selected { background: rgba(96,165,250,0.15); border-color: var(--cat-business); color: var(--cat-business); }
 .chip.cat-bayside.selected { background: rgba(45,212,191,0.15); border-color: var(--cat-bayside); color: var(--cat-bayside); }
-.chip.cat-personal.selected { background: rgba(74,222,128,0.15); border-color: var(--cat-personal); color: var(--cat-personal); }
+.chip.cat-personal.selected { background: rgba(74,222,128,0.12); border-color: var(--cat-personal); color: var(--cat-personal); }
 .chip.cat-other.selected { background: rgba(113,113,122,0.15); border-color: var(--cat-other); color: var(--cat-other); }
 
 /* Planning flow */
@@ -891,7 +891,7 @@ textarea.field-input { resize: vertical; min-height: 80px; }
 // Weekly Task Planner — PWA + Google Sheets
 // ============================================
 
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.1.1';
 const CLIENT_ID = '80439686719-sbus2kg78uj5s4s6b7ctvng0eii16fek.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
@@ -1568,13 +1568,13 @@ const ICONS = {
 const APP_ICON = `<svg width="80" height="80" viewBox="0 0 80 80" fill="none">
   <rect width="80" height="80" rx="18" fill="#262826"/>
   <rect x="4" y="4" width="72" height="72" rx="15" fill="#1a1c1a" stroke="#3f4540" stroke-width="1"/>
-  <rect x="18" y="22" width="24" height="3" rx="1.5" fill="#4ade80"/>
-  <rect x="18" y="30" width="32" height="3" rx="1.5" fill="#4ade80" opacity="0.5"/>
+  <rect x="18" y="22" width="24" height="3" rx="1.5" fill="#5b8def"/>
+  <rect x="18" y="30" width="32" height="3" rx="1.5" fill="#5b8def" opacity="0.5"/>
   <rect x="18" y="40" width="20" height="3" rx="1.5" fill="#14b8a6"/>
   <rect x="18" y="48" width="28" height="3" rx="1.5" fill="#14b8a6" opacity="0.5"/>
   <rect x="18" y="58" width="16" height="3" rx="1.5" fill="#22c55e"/>
-  <circle cx="56" cy="52" r="12" fill="#4ade80" opacity="0.15"/>
-  <polyline points="50,52 54,56 62,48" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <circle cx="56" cy="52" r="12" fill="#5b8def" opacity="0.15"/>
+  <polyline points="50,52 54,56 62,48" stroke="#5b8def" stroke-width="2.5" stroke-linecap="round" fill="none"/>
 </svg>`;
 
 // ============================================
