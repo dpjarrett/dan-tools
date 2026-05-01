@@ -5,29 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0f172a">
+<meta name="theme-color" content="#1a1c1a">
 <title>Weekly Task Planner</title>
-<link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIldlZWtseSBUYXNrIFBsYW5uZXIiLAogICJzaG9ydF9uYW1lIjogIlBsYW5uZXIiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBmMTcyYSIsCiAgInRoZW1lX2NvbG9yIjogIiMwZjE3MmEiLAogICJpY29ucyI6IFtdCn0=">
+<link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiV2Vla2x5IFRhc2sgUGxhbm5lciIsInNob3J0X25hbWUiOiJQbGFubmVyIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMxYTFjMWEiLCJ0aGVtZV9jb2xvciI6IiMxYTFjMWEiLCJpY29ucyI6W119Cg==">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --surface-raised: #273449;
-  --border: #334155;
-  --text: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --accent: #3b82f6;
-  --accent-dim: #1e3a5f;
-  --cat-business: #3b82f6;
-  --cat-bayside: #14b8a6;
-  --cat-personal: #22c55e;
-  --cat-other: #64748b;
-  --danger: #ef4444;
-  --warning: #f59e0b;
-  --success: #22c55e;
+  --bg: #1a1c1a;
+  --surface: #262826;
+  --surface-raised: #2f322f;
+  --border: #3f4540;
+  --text: #e4e4e7;
+  --text-secondary: #a1a1aa;
+  --text-muted: #5a5e5a;
+  --accent: #4ade80;
+  --accent-dim: #1a3a2a;
+  --cat-business: #60a5fa;
+  --cat-bayside: #2dd4bf;
+  --cat-personal: #4ade80;
+  --cat-other: #71717a;
+  --danger: #f87171;
+  --warning: #fbbf24;
+  --success: #4ade80;
   --radius: 12px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -194,6 +194,19 @@ body {
   display: flex;
   gap: 16px;
   margin-top: 12px;
+  align-items: center;
+}
+.btn-plan-week {
+  margin-left: auto;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 .stat {
@@ -302,15 +315,15 @@ body {
   letter-spacing: 0.3px;
 }
 
-.badge-business { background: rgba(59,130,246,0.15); color: var(--cat-business); }
-.badge-bayside { background: rgba(20,184,166,0.15); color: var(--cat-bayside); }
-.badge-personal { background: rgba(34,197,94,0.15); color: var(--cat-personal); }
-.badge-other { background: rgba(100,116,139,0.15); color: var(--cat-other); }
-.badge-custom { background: rgba(139,92,246,0.15); color: #8b5cf6; }
+.badge-business { background: rgba(96,165,250,0.15); color: var(--cat-business); }
+.badge-bayside { background: rgba(45,212,191,0.15); color: var(--cat-bayside); }
+.badge-personal { background: rgba(74,222,128,0.15); color: var(--cat-personal); }
+.badge-other { background: rgba(113,113,122,0.15); color: var(--cat-other); }
+.badge-custom { background: rgba(167,139,250,0.15); color: #a78bfa; }
 
-.priority-high { background: rgba(239,68,68,0.15); color: var(--danger); }
-.priority-medium { background: rgba(245,158,11,0.15); color: var(--warning); }
-.priority-low { background: rgba(100,116,139,0.1); color: var(--text-muted); }
+.priority-high { background: rgba(248,113,113,0.15); color: var(--danger); }
+.priority-medium { background: rgba(251,191,36,0.15); color: var(--warning); }
+.priority-low { background: rgba(113,113,122,0.1); color: var(--text-muted); }
 
 
 .task-time {
@@ -516,10 +529,10 @@ textarea.field-input { resize: vertical; min-height: 80px; }
   color: var(--accent);
 }
 
-.chip.cat-business.selected { background: rgba(59,130,246,0.15); border-color: var(--cat-business); color: var(--cat-business); }
-.chip.cat-bayside.selected { background: rgba(20,184,166,0.15); border-color: var(--cat-bayside); color: var(--cat-bayside); }
-.chip.cat-personal.selected { background: rgba(34,197,94,0.15); border-color: var(--cat-personal); color: var(--cat-personal); }
-.chip.cat-other.selected { background: rgba(100,116,139,0.15); border-color: var(--cat-other); color: var(--cat-other); }
+.chip.cat-business.selected { background: rgba(96,165,250,0.15); border-color: var(--cat-business); color: var(--cat-business); }
+.chip.cat-bayside.selected { background: rgba(45,212,191,0.15); border-color: var(--cat-bayside); color: var(--cat-bayside); }
+.chip.cat-personal.selected { background: rgba(74,222,128,0.15); border-color: var(--cat-personal); color: var(--cat-personal); }
+.chip.cat-other.selected { background: rgba(113,113,122,0.15); border-color: var(--cat-other); color: var(--cat-other); }
 
 /* Planning flow */
 .plan-progress {
@@ -878,7 +891,7 @@ textarea.field-input { resize: vertical; min-height: 80px; }
 // Weekly Task Planner — PWA + Google Sheets
 // ============================================
 
-const APP_VERSION = '1.0.1';
+const APP_VERSION = '1.1.0';
 const CLIENT_ID = '80439686719-sbus2kg78uj5s4s6b7ctvng0eii16fek.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
@@ -1553,15 +1566,15 @@ const ICONS = {
 };
 
 const APP_ICON = `<svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-  <rect width="80" height="80" rx="18" fill="#1e293b"/>
-  <rect x="4" y="4" width="72" height="72" rx="15" fill="#0f172a" stroke="#334155" stroke-width="1"/>
-  <rect x="18" y="22" width="24" height="3" rx="1.5" fill="#3b82f6"/>
-  <rect x="18" y="30" width="32" height="3" rx="1.5" fill="#3b82f6" opacity="0.5"/>
+  <rect width="80" height="80" rx="18" fill="#262826"/>
+  <rect x="4" y="4" width="72" height="72" rx="15" fill="#1a1c1a" stroke="#3f4540" stroke-width="1"/>
+  <rect x="18" y="22" width="24" height="3" rx="1.5" fill="#4ade80"/>
+  <rect x="18" y="30" width="32" height="3" rx="1.5" fill="#4ade80" opacity="0.5"/>
   <rect x="18" y="40" width="20" height="3" rx="1.5" fill="#14b8a6"/>
   <rect x="18" y="48" width="28" height="3" rx="1.5" fill="#14b8a6" opacity="0.5"/>
   <rect x="18" y="58" width="16" height="3" rx="1.5" fill="#22c55e"/>
-  <circle cx="56" cy="52" r="12" fill="#3b82f6" opacity="0.15"/>
-  <polyline points="50,52 54,56 62,48" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <circle cx="56" cy="52" r="12" fill="#4ade80" opacity="0.15"/>
+  <polyline points="50,52 54,56 62,48" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" fill="none"/>
 </svg>`;
 
 // ============================================
@@ -1655,6 +1668,7 @@ function renderTodayHero() {
     <div class="today-stats">
       <div class="stat"><div class="stat-dot" style="background:var(--accent)"></div>${active.length} active</div>
       <div class="stat"><div class="stat-dot" style="background:var(--success)"></div>${done.length} done</div>
+      <button class="btn-plan-week" onclick="openPlanWeek()">Plan My Week</button>
     </div>
   </div>`;
 }
@@ -1915,7 +1929,6 @@ async function deleteCategory(name) {
 
 function renderBottomNav() {
   return `<div class="bottom-nav">
-    <a href="javascript:openPlanWeek()" class="plan-week-link">Plan My Week</a>
     <button class="fab" onclick="openAddTask()" title="Add Task">${ICONS.plus}</button>
   </div>`;
 }
