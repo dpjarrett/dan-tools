@@ -914,6 +914,7 @@ let state = {
   editTask: null,
   editIndex: -1,
   triageTasks: [],
+  triageCollapsed: sessionStorage.getItem('triageCollapsed') === 'true',
   customCategories: [],
   toastMsg: '',
   toastTimer: null,
@@ -1668,16 +1669,18 @@ function renderCategoryFilter() {
 function renderTriageSection() {
   const count = state.triageTasks.length;
   let html = '<div class="triage-section">';
-  html += `<div class="triage-header" onclick="document.querySelector(\'.triage-body\').style.display=document.querySelector(\'.triage-body\').style.display===\'none\'?\'block\':\'none\'">
+  html += `<div class="triage-header" onclick="toggleTriageCollapsed()">
     <h3>${ICONS.warning} ${count} overdue task${count > 1 ? 's' : ''} — needs triage</h3>
+    <span style="font-size:14px">${state.triageCollapsed ? '▸' : '▾'}</span>
   </div>`;
-  html += '<div class="triage-body">';
+  html += `<div class="triage-body" style="display:${state.triageCollapsed ? 'none' : 'block'}">`;
   state.triageTasks.forEach(idx => {
     const t = state.tasks[idx];
     html += `<div class="triage-task">
       <div class="task-name">${escHtml(t.name)}</div>
       <input type="date" class="triage-date-input" value="${getTodayStr()}" id="triage-date-${idx}">
       <button class="triage-done-btn" onclick="rescheduleTask(${idx}, document.getElementById('triage-date-${idx}').value)">Assign</button>
+      <button class="triage-done-btn" onclick="deleteTask(${idx})" style="background:var(--danger);color:var(--text)" title="Delete task">✕</button>
     </div>`;
   });
   html += '</div></div>';
@@ -2116,6 +2119,22 @@ async function toggleTask(idx) {
   await saveTasks();
 }
 
+
+function toggleTriageCollapsed() {
+  state.triageCollapsed = !state.triageCollapsed;
+  sessionStorage.setItem('triageCollapsed', state.triageCollapsed);
+  render();
+}
+
+async function deleteTask(idx) {
+  const t = state.tasks[idx];
+  if (!confirm(`Delete "${t.name}"?`)) return;
+  state.tasks.splice(idx, 1);
+  state.triageTasks = state.triageTasks.filter(i => i !== idx).map(i => i > idx ? i - 1 : i);
+  render();
+  await saveTasks();
+  toast('Task deleted');
+}
 
 let _rescheduleInFlight = false;
 async function rescheduleTask(idx, newDate) {
