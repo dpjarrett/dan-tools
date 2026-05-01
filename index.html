@@ -474,6 +474,7 @@ body {
   justify-content: center;
   animation: fadeIn 0.2s ease-out;
   backdrop-filter: blur(4px);
+  overflow: hidden;
 }
 
 .modal {
@@ -484,8 +485,10 @@ body {
   max-width: 480px;
   max-height: 90vh;
   overflow-y: auto;
+  overflow-x: hidden;
   animation: slideIn 0.3s ease-out;
   padding-bottom: calc(var(--safe-bottom) + 20px);
+  box-sizing: border-box;
 }
 
 .modal-handle {
@@ -925,7 +928,7 @@ textarea.field-input { resize: vertical; min-height: 80px; }
 // Weekly Task Planner — PWA + Google Sheets
 // ============================================
 
-const APP_VERSION = '1.4.4';
+const APP_VERSION = '1.4.5';
 const CLIENT_ID = '80439686719-sbus2kg78uj5s4s6b7ctvng0eii16fek.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
@@ -2041,7 +2044,7 @@ function renderPlanTriageModal() {
         </div>
         <div class="field">
           <div class="plan-question">Depends on anyone?</div>
-          <input class="field-input" id="plan-dep" placeholder="Optional — e.g. 'Waiting on Jake'" value="${escHtml(c.dependencies || '')}" oninput="setPlan('dependencies', this.value)">
+          <input class="field-input" id="plan-dep" placeholder="Optional — e.g. 'Waiting on Jake'" value="${escHtml(c.dependencies || '')}" oninput="setPlan('dependencies', this.value, true)">
         </div>
         <button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;margin-top:8px" onclick="nextPlanItem()">
           ${state.planIndex < state.planItems.length - 1 ? 'Next Task →' : 'Finish Planning'}
@@ -2316,9 +2319,9 @@ function startTriage() {
   render();
 }
 
-function setPlan(key, val) {
+function setPlan(key, val, skipRender) {
   state.planCurrent[key] = val;
-  render();
+  if (!skipRender) render();
 }
 
 function nextPlanItem() {
