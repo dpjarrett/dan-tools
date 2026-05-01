@@ -1501,12 +1501,19 @@ function formatMinutes(m) {
 }
 
 function toast(msg, duration = 3000) {
+  // Remove existing toast
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  // Insert toast without full re-render
+  const div = document.createElement('div');
+  div.className = 'toast';
+  div.textContent = msg;
+  document.getElementById('app').appendChild(div);
   state.toastMsg = msg;
-  render();
   clearTimeout(state.toastTimer);
   state.toastTimer = setTimeout(() => {
     state.toastMsg = '';
-    render();
+    div.remove();
   }, duration);
 }
 
@@ -2169,24 +2176,18 @@ async function deleteTask(idx) {
   if (!confirm(`Delete "${t.name}"?`)) return;
   state.tasks.splice(idx, 1);
   state.triageTasks = state.triageTasks.filter(i => i !== idx).map(i => i > idx ? i - 1 : i);
-  render();
-  await saveTasks();
   toast('Task deleted');
+  saveTasks();
 }
 
 let _rescheduleInFlight = false;
 async function rescheduleTask(idx, newDate) {
-  if (_rescheduleInFlight) return; // prevent double-fire
+  if (_rescheduleInFlight) return;
   _rescheduleInFlight = true;
-  try {
-    state.tasks[idx].day = newDate;
-    state.triageTasks = state.triageTasks.filter(i => i !== idx);
-    render();
-    await saveTasks();
-    toast('Task rescheduled');
-  } finally {
-    _rescheduleInFlight = false;
-  }
+  state.tasks[idx].day = newDate;
+  state.triageTasks = state.triageTasks.filter(i => i !== idx);
+  toast('Task rescheduled');
+  saveTasks().finally(() => { _rescheduleInFlight = false; });
 }
 
 async function saveTaskForm() {
