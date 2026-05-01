@@ -163,6 +163,8 @@ body {
   flex-shrink: 0;
   position: relative;
   z-index: 10;
+  touch-action: none;
+  overflow: hidden;
 }
 .top-fixed::after {
   content: '';
@@ -225,15 +227,15 @@ body {
 }
 .btn-plan-week {
   margin-left: auto;
-  background: transparent;
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 5px 12px;
-  font-size: 12px;
+  background: none;
+  color: var(--accent);
+  border: none;
+  padding: 0;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
+  font-family: inherit;
 }
 
 .stat {
@@ -720,13 +722,16 @@ textarea.field-input { resize: vertical; min-height: 80px; }
   background: var(--accent-dim);
 }
 
+.week-day-pill.selected .pill-date { color: var(--accent); }
+
 .week-day-pill.has-tasks { color: var(--text-secondary); }
 
-.week-day-pill .pill-count {
+.week-day-pill .pill-date {
   display: block;
-  font-size: 16px;
-  font-weight: 800;
-  margin-bottom: 2px;
+  font-size: 11px;
+  font-weight: 400;
+  margin-top: 2px;
+  color: var(--text-muted);
 }
 
 /* Category filter bar */
@@ -917,7 +922,7 @@ textarea.field-input { resize: vertical; min-height: 80px; }
 // Weekly Task Planner — PWA + Google Sheets
 // ============================================
 
-const APP_VERSION = '1.3.4';
+const APP_VERSION = '1.3.7';
 const CLIENT_ID = '80439686719-sbus2kg78uj5s4s6b7ctvng0eii16fek.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
@@ -1698,7 +1703,7 @@ function renderTodayHero() {
     <div class="today-stats">
       <div class="stat"><div class="stat-dot" style="background:var(--accent)"></div>${active.length} active</div>
       <div class="stat"><div class="stat-dot" style="background:var(--success)"></div>${done.length} done</div>
-      <button class="btn-plan-week" onclick="openPlanWeek()">Plan My Week</button>
+      <button class="btn-plan-week" onclick="openPlanWeek()">Plan week →</button>
     </div>
   </div>`;
 }
@@ -1727,7 +1732,7 @@ function renderWeekPills() {
     const isToday = dateStr === todayStr;
     const isSelected = dateStr === sel;
     const cls = `week-day-pill${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}${dayTasks.length > 0 ? ' has-tasks' : ''}`;
-    html += `<div class="${cls}" onclick="selectDay('${dateStr}')"><span class="pill-count">${dayTasks.length}</span>${short} ${dateNum}</div>`;
+    html += `<div class="${cls}" onclick="selectDay('${dateStr}')">${short}<span class="pill-date">${dateNum}</span></div>`;
   }
   html += '</div>';
   html += `<button class="week-nav-btn" onclick="nextDay()">${ICONS.rightArrow}</button>`;
