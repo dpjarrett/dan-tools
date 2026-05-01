@@ -925,7 +925,7 @@ textarea.field-input { resize: vertical; min-height: 80px; }
 // Weekly Task Planner — PWA + Google Sheets
 // ============================================
 
-const APP_VERSION = '1.4.0';
+const APP_VERSION = '1.4.1';
 const CLIENT_ID = '80439686719-sbus2kg78uj5s4s6b7ctvng0eii16fek.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
@@ -1515,6 +1515,9 @@ function getTodayTasks() {
     const bDone = isTaskCompletedOnDay(b, today);
     if (aDone && !bDone) return 1;
     if (bDone && !aDone) return -1;
+    if (a.scheduledTime && !b.scheduledTime) return -1;
+    if (!a.scheduledTime && b.scheduledTime) return 1;
+    if (a.scheduledTime && b.scheduledTime) return a.scheduledTime.localeCompare(b.scheduledTime);
     const pa = PRIORITY_RANK[a.priority] ?? 2;
     const pb = PRIORITY_RANK[b.priority] ?? 2;
     if (pa !== pb) return pa - pb;
@@ -1798,17 +1801,18 @@ function renderTodayTasks() {
       const bDone = isTaskCompletedOnDay(b, sel);
       if (aDone && !bDone) return 1;
       if (bDone && !aDone) return -1;
-      // Then sort by priority rank (High first, then Medium, then Low)
+      // Scheduled time first (tasks with a time before tasks without)
+      if (a.scheduledTime && !b.scheduledTime) return -1;
+      if (!a.scheduledTime && b.scheduledTime) return 1;
+      // If both have times, sort chronologically
+      if (a.scheduledTime && b.scheduledTime) return a.scheduledTime.localeCompare(b.scheduledTime);
+      // No time on either — sort by priority rank (High first)
       const pa = PRIORITY_RANK[a.priority] ?? 2;
       const pb = PRIORITY_RANK[b.priority] ?? 2;
       if (pa !== pb) return pa - pb;
       // Then In Progress before Not Started
       if (a.status === 'In Progress' && b.status !== 'In Progress') return -1;
       if (b.status === 'In Progress' && a.status !== 'In Progress') return 1;
-      // Then by scheduled time (tasks with a time come first, sorted chronologically)
-      if (a.scheduledTime && b.scheduledTime) return a.scheduledTime.localeCompare(b.scheduledTime);
-      if (a.scheduledTime && !b.scheduledTime) return -1;
-      if (!a.scheduledTime && b.scheduledTime) return 1;
       return 0;
     }).forEach((t) => {
       const idx = state.tasks.indexOf(t);
