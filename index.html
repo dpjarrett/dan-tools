@@ -19,8 +19,8 @@
   --text: #e4e4e7;
   --text-secondary: #a1a1aa;
   --text-muted: #5a5e5a;
-  --accent: #5b8def;
-  --accent-dim: #1e2d4a;
+  --accent: #2577e1;
+  --accent-dim: #152d4a;
   --cat-business: #60a5fa;
   --cat-bayside: #2dd4bf;
   --cat-personal: #4ade80;
@@ -165,7 +165,7 @@ body {
 }
 
 /* Sections */
-.section { padding: 16px; }
+.section { padding: 12px 16px; }
 .section-title {
   font-size: 14px;
   font-weight: 600;
@@ -175,11 +175,11 @@ body {
 
 /* Today hero */
 .today-hero {
-  padding: 20px 16px 8px;
+  padding: 16px 16px 6px;
 }
 
 .today-date {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.5px;
   margin-bottom: 2px;
@@ -192,19 +192,19 @@ body {
 
 .today-stats {
   display: flex;
-  gap: 16px;
-  margin-top: 12px;
+  gap: 14px;
+  margin-top: 8px;
   align-items: center;
 }
 .btn-plan-week {
   margin-left: auto;
-  background: var(--accent-dim);
-  color: var(--accent);
-  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 600;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -226,13 +226,13 @@ body {
 /* Task card */
 .task-card {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: var(--radius);
-  padding: 14px;
-  margin-bottom: 8px;
+  padding: 12px;
+  margin-bottom: 6px;
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 10px;
   transition: all 0.3s ease;
   animation: slideIn 0.3s ease-out;
   position: relative;
@@ -307,10 +307,10 @@ body {
 }
 
 .task-badge {
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 600;
-  padding: 3px 9px;
-  border-radius: 6px;
+  padding: 2px 7px;
+  border-radius: 4px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
@@ -713,22 +713,21 @@ textarea.field-input { resize: vertical; min-height: 80px; }
 .filter-bar::-webkit-scrollbar { display: none; }
 .filter-chip {
   flex-shrink: 0;
-  padding: 5px 12px;
+  padding: 5px 14px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  border: 1px solid var(--border);
+  border: none;
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   transition: all 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 }
 .filter-chip:active { transform: scale(0.95); }
 .filter-chip.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+  background: rgba(37,119,225,0.15);
+  color: var(--accent);
 }
 
 /* Triage section for overdue tasks */
@@ -891,7 +890,7 @@ textarea.field-input { resize: vertical; min-height: 80px; }
 // Weekly Task Planner — PWA + Google Sheets
 // ============================================
 
-const APP_VERSION = '1.1.1';
+const APP_VERSION = '1.2.0';
 const CLIENT_ID = '80439686719-sbus2kg78uj5s4s6b7ctvng0eii16fek.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
@@ -1568,13 +1567,13 @@ const ICONS = {
 const APP_ICON = `<svg width="80" height="80" viewBox="0 0 80 80" fill="none">
   <rect width="80" height="80" rx="18" fill="#262826"/>
   <rect x="4" y="4" width="72" height="72" rx="15" fill="#1a1c1a" stroke="#3f4540" stroke-width="1"/>
-  <rect x="18" y="22" width="24" height="3" rx="1.5" fill="#5b8def"/>
-  <rect x="18" y="30" width="32" height="3" rx="1.5" fill="#5b8def" opacity="0.5"/>
+  <rect x="18" y="22" width="24" height="3" rx="1.5" fill="#2577e1"/>
+  <rect x="18" y="30" width="32" height="3" rx="1.5" fill="#2577e1" opacity="0.5"/>
   <rect x="18" y="40" width="20" height="3" rx="1.5" fill="#14b8a6"/>
   <rect x="18" y="48" width="28" height="3" rx="1.5" fill="#14b8a6" opacity="0.5"/>
   <rect x="18" y="58" width="16" height="3" rx="1.5" fill="#22c55e"/>
-  <circle cx="56" cy="52" r="12" fill="#5b8def" opacity="0.15"/>
-  <polyline points="50,52 54,56 62,48" stroke="#5b8def" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <circle cx="56" cy="52" r="12" fill="#2577e1" opacity="0.15"/>
+  <polyline points="50,52 54,56 62,48" stroke="#2577e1" stroke-width="2.5" stroke-linecap="round" fill="none"/>
 </svg>`;
 
 // ============================================
@@ -1806,7 +1805,9 @@ function renderTaskCard(t, idx, forDay) {
   const cc = catClass(t.category);
   const hasRecurrence = t.recurrence && t.recurrence !== 'None';
   const priorityClass = t.priority === 'High' ? 'priority-high' : t.priority === 'Medium' ? 'priority-medium' : 'priority-low';
-  return `<div class="task-card${isCompleted ? ' completed' : ''}" data-idx="${idx}" onclick="editTask(${idx})">
+  const catColor = cc === 'custom' ? customCatColor(t.category) : `var(--cat-${cc})`;
+  const leftBorder = !hasRecurrence && !isCompleted ? `border-left:3px solid ${catColor};` : '';
+  return `<div class="task-card${isCompleted ? ' completed' : ''}" data-idx="${idx}" onclick="editTask(${idx})" style="${leftBorder}">
     <div class="task-checkbox${isCompleted ? ' checked' : ''}" onclick="event.stopPropagation(); toggleTask(${idx})">
       <svg viewBox="0 0 24 24"><polyline points="4 12 9 17 20 6"/></svg>
     </div>
