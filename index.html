@@ -1005,6 +1005,44 @@ function handleAuth() {
   tokenClient.requestAccessToken({ prompt: 'consent' });
 }
 
+// Silent token refresh — gets a new token without showing consent screen
+function silentRefresh() {
+  return new Promise((resolve, reject) => {
+    const origCallback = tokenClient.callback;
+    tokenClient.callback = (resp) => {
+      tokenClient.callback = origCallback;
+      if (resp.error) { reject(resp); return; }
+      localStorage.setItem('wtp_access_token', resp.access_token);
+      resolve(resp);
+    };
+    tokenClient.requestAccessToken({ prompt: '' });
+  });
+}
+
+// Wrap any gapi call — if it fails with 401, silently refresh and retry once
+async function apiCall(fn) {
+  try {
+    return await fn();
+  } catch (e) {
+    const status = e?.status || e?.result?.error?.code;
+    if (status === 401 || status === 403) {
+      try {
+        await silentRefresh();
+        return await fn();
+      } catch (refreshErr) {
+        // Silent refresh failed — force re-login
+        localStorage.removeItem('wtp_access_token');
+        gapi.client.setToken(null);
+        state.authed = false;
+        state.loading = false;
+        render();
+        throw refreshErr;
+      }
+    }
+    throw e;
+  }
+}
+
 // ============================================
 // Sheet operations
 // ============================================
@@ -1013,33 +1051,33 @@ async function initSheet() {
   const stored = FIXED_SHEET_ID || localStorage.getItem('wtp_sheet_id');
   if (stored) {
     try {
-      const resp = await gapi.client.sheets.spreadsheets.get({ spreadsheetId: stored });
+      const resp = await apiCall(() => gapi.client.sheets.spreadsheets.get({ spreadsheetId: stored }));
       state.spreadsheetId = stored;
       localStorage.setItem('wtp_sheet_id', stored);
       // Verify tabs exist
       const sheets = resp.result.sheets.map(s => s.properties.title);
       if (!sheets.includes('Tasks')) {
-        await gapi.client.sheets.spreadsheets.batchUpdate({
+        await apiCall(() => gapi.client.sheets.spreadsheets.batchUpdate({
           spreadsheetId: stored,
           resource: { requests: [{ addSheet: { properties: { title: 'Tasks' } } }] }
-        });
-        await gapi.client.sheets.spreadsheets.values.update({
+        }));
+        await apiCall(() => gapi.client.sheets.spreadsheets.values.update({
           spreadsheetId: stored, range: 'Tasks!A1:L1',
           valueInputOption: 'RAW',
           resource: { values: [COLUMNS] }
-        });
+        }));
       }
       // Always update headers to ensure new columns exist
-      await gapi.client.sheets.spreadsheets.values.update({
+      await apiCall(() => gapi.client.sheets.spreadsheets.values.update({
         spreadsheetId: stored, range: 'Tasks!A1:L1',
         valueInputOption: 'RAW',
         resource: { values: [COLUMNS] }
-      });
+      }));
       if (!sheets.includes('Settings')) {
-        await gapi.client.sheets.spreadsheets.batchUpdate({
+        await apiCall(() => gapi.client.sheets.spreadsheets.batchUpdate({
           spreadsheetId: stored,
           resource: { requests: [{ addSheet: { properties: { title: 'Settings' } } }] }
-        });
+        }));
       }
       return;
     } catch(e) {
@@ -1048,7 +1086,7 @@ async function initSheet() {
   }
 
   // Create new sheet
-  const resp = await gapi.client.sheets.spreadsheets.create({
+  const resp = await apiCall(() => gapi.client.sheets.spreadsheets.create({
     resource: {
       properties: { title: 'Weekly Task Planner' },
       sheets: [
@@ -1056,30 +1094,30 @@ async function initSheet() {
         { properties: { title: 'Settings' } }
       ]
     }
-  });
+  }));
   state.spreadsheetId = resp.result.spreadsheetId;
   localStorage.setItem('wtp_sheet_id', state.spreadsheetId);
 
   // Add header row
-  await gapi.client.sheets.spreadsheets.values.update({
+  await apiCall(() => gapi.client.sheets.spreadsheets.values.update({
     spreadsheetId: state.spreadsheetId, range: 'Tasks!A1:L1',
     valueInputOption: 'RAW',
     resource: { values: [COLUMNS] }
-  });
+  }));
 
   // Add settings headers
-  await gapi.client.sheets.spreadsheets.values.update({
+  await apiCall(() => gapi.client.sheets.spreadsheets.values.update({
     spreadsheetId: state.spreadsheetId, range: 'Settings!A1:B1',
     valueInputOption: 'RAW',
     resource: { values: [['Key','Value']] }
-  });
+  }));
 }
 
 async function loadTasks() {
   try {
-    const resp = await gapi.client.sheets.spreadsheets.values.get({
+    const resp = await apiCall(() => gapi.client.sheets.spreadsheets.values.get({
       spreadsheetId: state.spreadsheetId, range: 'Tasks!A2:L1000'
-    });
+    }));
     const rows = resp.result.values || [];
     state.tasks = rows.map((r, i) => ({
       row: i + 2,
@@ -1137,9 +1175,9 @@ async function loadTasks() {
 
 async function loadCategories() {
   try {
-    const resp = await gapi.client.sheets.spreadsheets.values.get({
+    const resp = await apiCall(() => gapi.client.sheets.spreadsheets.values.get({
       spreadsheetId: state.spreadsheetId, range: 'Settings!A2:B100'
-    });
+    }));
     const rows = resp.result.values || [];
     const catRow = rows.find(r => r[0] === 'customCategories');
     if (catRow && catRow[1]) {
@@ -1153,25 +1191,25 @@ async function loadCategories() {
 async function saveCategories() {
   try {
     // Read existing settings
-    const resp = await gapi.client.sheets.spreadsheets.values.get({
+    const resp = await apiCall(() => gapi.client.sheets.spreadsheets.values.get({
       spreadsheetId: state.spreadsheetId, range: 'Settings!A2:B100'
-    });
+    }));
     const rows = resp.result.values || [];
     const catIdx = rows.findIndex(r => r[0] === 'customCategories');
     const value = state.customCategories.join(',');
     if (catIdx >= 0) {
       const rowNum = catIdx + 2;
-      await gapi.client.sheets.spreadsheets.values.update({
+      await apiCall(() => gapi.client.sheets.spreadsheets.values.update({
         spreadsheetId: state.spreadsheetId, range: `Settings!A${rowNum}:B${rowNum}`,
         valueInputOption: 'RAW',
         resource: { values: [['customCategories', value]] }
-      });
+      }));
     } else {
-      await gapi.client.sheets.spreadsheets.values.append({
+      await apiCall(() => gapi.client.sheets.spreadsheets.values.append({
         spreadsheetId: state.spreadsheetId, range: 'Settings!A:B',
         valueInputOption: 'RAW',
         resource: { values: [['customCategories', value]] }
-      });
+      }));
     }
   } catch(e) {
     console.error('Save categories error', e);
@@ -1195,18 +1233,18 @@ async function saveTasks(tasks) {
     ]);
     // Clear existing data and write all
     try {
-      await gapi.client.sheets.spreadsheets.values.clear({
+      await apiCall(() => gapi.client.sheets.spreadsheets.values.clear({
         spreadsheetId: state.spreadsheetId, range: 'Tasks!A2:L1000'
-      });
+      }));
     } catch(e) {}
 
     if (values.length > 0) {
-      await gapi.client.sheets.spreadsheets.values.update({
+      await apiCall(() => gapi.client.sheets.spreadsheets.values.update({
         spreadsheetId: state.spreadsheetId,
         range: `Tasks!A2:L${values.length + 1}`,
         valueInputOption: 'RAW',
         resource: { values }
-      });
+      }));
     }
   }
 
@@ -1228,11 +1266,11 @@ async function appendTask(task) {
   task.recurrence = task.recurrence || 'None';
   task.row = state.tasks.length + 2;
   state.tasks.push(task);
-  await gapi.client.sheets.spreadsheets.values.append({
+  await apiCall(() => gapi.client.sheets.spreadsheets.values.append({
     spreadsheetId: state.spreadsheetId, range: 'Tasks!A:K',
     valueInputOption: 'RAW',
     resource: { values: [[task.name, task.time, task.category, task.priority, task.dependencies, task.status, task.day, task.completedAt, task.createdDate, task.recurrence, task.completedDays || '']] }
-  });
+  }));
 }
 
 // ============================================
