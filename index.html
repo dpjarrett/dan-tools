@@ -65,10 +65,12 @@ body {
 #app {
   max-width: 720px;
   margin: 0 auto;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   padding: 0 16px;
+  overflow: hidden;
 }
 
 @media (max-width: 480px) {
@@ -156,12 +158,18 @@ body {
 
 .btn-icon:active { transform: scale(0.92); }
 
-/* Main content */
+/* Fixed top section */
+.top-fixed {
+  flex-shrink: 0;
+}
+
+/* Main content — scrollable */
 .main-content {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding-bottom: 120px;
+  min-height: 0;
 }
 
 /* Sections */
@@ -718,9 +726,9 @@ textarea.field-input { resize: vertical; min-height: 80px; }
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  border: none;
+  border: 1px solid var(--border);
   background: transparent;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   transition: all 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 }
@@ -890,7 +898,7 @@ textarea.field-input { resize: vertical; min-height: 80px; }
 // Weekly Task Planner — PWA + Google Sheets
 // ============================================
 
-const APP_VERSION = '1.2.1';
+const APP_VERSION = '1.3.1';
 const CLIENT_ID = '80439686719-sbus2kg78uj5s4s6b7ctvng0eii16fek.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
@@ -1599,20 +1607,24 @@ function render() {
 
   let html = '';
   html += renderHeader();
-  html += '<div class="main-content">';
 
   if (state.view === 'main') {
+    html += '<div class="top-fixed">';
     html += renderTodayHero();
     html += renderWeekPills();
     html += renderCategoryFilter();
+    html += '</div>';
+    html += '<div class="main-content">';
     if (state.triageTasks.length > 0) {
       html += renderTriageSection();
     }
     html += renderTodayTasks();
     html += renderWeekView();
+    html += '</div>';
+  } else {
+    html += '<div class="main-content">';
+    html += '</div>';
   }
-
-  html += '</div>';
   html += renderBottomNav();
 
   // Overlays
