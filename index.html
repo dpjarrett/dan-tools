@@ -166,21 +166,24 @@ body {
   touch-action: none;
   overflow: hidden;
 }
-.top-fixed::after {
+
+/* Main content — gradient overlay */
+.main-content::before {
   content: '';
   display: block;
   height: 48px;
   background: linear-gradient(to bottom, var(--bg), transparent);
-  position: absolute;
-  bottom: -48px;
+  position: sticky;
+  top: 0;
   left: 0;
   right: 0;
   pointer-events: none;
   z-index: 10;
   opacity: 0;
   transition: opacity 0.3s ease;
+  margin-bottom: -48px;
 }
-.top-fixed.scrolled::after {
+.main-content.scrolled::before {
   opacity: 1;
 }
 
@@ -226,7 +229,6 @@ body {
   align-items: center;
 }
 .btn-plan-week {
-  margin-left: auto;
   background: none;
   color: var(--accent);
   border: none;
@@ -236,6 +238,7 @@ body {
   cursor: pointer;
   white-space: nowrap;
   font-family: inherit;
+  padding-right: 4px;
 }
 
 .stat {
@@ -922,7 +925,7 @@ textarea.field-input { resize: vertical; min-height: 80px; }
 // Weekly Task Planner — PWA + Google Sheets
 // ============================================
 
-const APP_VERSION = '1.3.7';
+const APP_VERSION = '1.3.9';
 const CLIENT_ID = '80439686719-sbus2kg78uj5s4s6b7ctvng0eii16fek.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
@@ -1701,9 +1704,9 @@ function renderTodayHero() {
     <div class="today-date">${dateLabel}${isToday ? ' (Today)' : ''}</div>
     <div class="today-subtitle">${active.length} task${active.length !== 1 ? 's' : ''} remaining &middot; ${formatMinutes(totalMin)} of work</div>
     <div class="today-stats">
+      <button class="btn-plan-week" onclick="openPlanWeek()">Plan week →</button>
       <div class="stat"><div class="stat-dot" style="background:var(--accent)"></div>${active.length} active</div>
       <div class="stat"><div class="stat-dot" style="background:var(--success)"></div>${done.length} done</div>
-      <button class="btn-plan-week" onclick="openPlanWeek()">Plan week →</button>
     </div>
   </div>`;
 }
@@ -2154,10 +2157,9 @@ function bindEvents() {
   });
   // Scroll listener for gradient fade
   const content = document.querySelector('.main-content');
-  const topFixed = document.querySelector('.top-fixed');
-  if (content && topFixed) {
+  if (content) {
     content.addEventListener('scroll', () => {
-      topFixed.classList.toggle('scrolled', content.scrollTop > 8);
+      content.classList.toggle('scrolled', content.scrollTop > 8);
     }, { passive: true });
   }
 }
