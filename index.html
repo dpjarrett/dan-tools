@@ -890,7 +890,7 @@ textarea.field-input { resize: vertical; min-height: 80px; }
 // Weekly Task Planner — PWA + Google Sheets
 // ============================================
 
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.2.1';
 const CLIENT_ID = '80439686719-sbus2kg78uj5s4s6b7ctvng0eii16fek.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
@@ -2377,19 +2377,25 @@ async function boot() {
 // Register service worker for PWA (inline via blob)
 if ('serviceWorker' in navigator) {
   const swCode = `
-    const CACHE = 'wtp-v1';
+    const CACHE = 'wtp-v${APP_VERSION.replace(/\\./g, '')}';
     self.addEventListener('install', e => { self.skipWaiting(); });
-    self.addEventListener('activate', e => { e.waitUntil(clients.claim()); });
+    self.addEventListener('activate', e => {
+      e.waitUntil(
+        caches.keys().then(keys => Promise.all(
+          keys.filter(k => k.startsWith('wtp-') && k !== CACHE).map(k => caches.delete(k))
+        )).then(() => clients.claim())
+      );
+    });
     self.addEventListener('fetch', e => {
       if (e.request.url.includes('googleapis.com') || e.request.url.includes('accounts.google.com')) {
         return;
       }
       e.respondWith(
-        caches.match(e.request).then(r => r || fetch(e.request).then(resp => {
+        fetch(e.request).then(resp => {
           const clone = resp.clone();
           caches.open(CACHE).then(c => c.put(e.request, clone));
           return resp;
-        }).catch(() => caches.match(e.request)))
+        }).catch(() => caches.match(e.request))
       );
     });
   `;
