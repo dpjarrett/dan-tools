@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Blue Oaks Breakaway Construction — Volunteer Signup</title>
+<style>
+  :root {
+    --primary: #0d7490;
+    --primary-dark: #075466;
+    --primary-light: #e0f2f7;
+    --bg: #f4f8fa;
+    --card: #ffffff;
+    --text: #14242c;
+    --muted: #5a6c75;
+    --border: #d6e2e8;
+    --error: #c0392b;
+    --shadow: 0 6px 24px rgba(13, 116, 144, 0.10);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { font-size: 17px; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(180deg, #eaf3f7 0%, var(--bg) 200px);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 28px 16px 60px;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  header h1 {
+    color: var(--primary-dark);
+    font-size: 30px;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+
+  header .tagline {
+    color: var(--muted);
+    margin: 0;
+    font-size: 17px;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 32px;
+  }
+
+  section {
+    padding-top: 28px;
+    margin-top: 28px;
+    border-top: 1px solid var(--border);
+  }
+
+  section:first-of-type {
+    padding-top: 0;
+    margin-top: 0;
+    border-top: 0;
+  }
+
+  h2 {
+    color: var(--primary-dark);
+    font-size: 22px;
+    margin: 0 0 6px 0;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 16px;
+    margin: 0 0 20px 0;
+    line-height: 1.55;
+  }
+
+  label.field-label {
+    display: block;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  label .req {
+    color: var(--error);
+    margin-left: 2px;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 16px;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: #fff;
+    color: var(--text);
+  }
+
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(13, 116, 144, 0.14);
+  }
+
+  .form-group { margin-bottom: 20px; }
+
+  .field-error {
+    color: var(--error);
+    font-size: 14px;
+    margin-top: 6px;
+    display: none;
+  }
+
+  .field-error.show { display: block; }
+
+  /* Flexible toggle — prominent escape hatch */
+  .flex-toggle {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    background: #fafdfe;
+    margin-top: 18px;
+    transition: all 0.2s;
+  }
+
+  .flex-toggle:hover {
+    border-color: var(--primary);
+  }
+
+  .flex-toggle input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+
+  .flex-toggle.checked {
+    background: var(--primary-light);
+    border-color: var(--primary);
+  }
+
+  .flex-toggle .ft-title {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text);
+    margin: 0 0 2px 0;
+  }
+
+  .flex-toggle .ft-sub {
+    font-size: 14px;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  /* Schedule list */
+  .schedule-list {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: opacity 0.25s;
+  }
+
+  .schedule-list.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .schedule-row {
+    display: grid;
+    grid-template-columns: 1.5fr 2fr;
+    gap: 16px;
+    align-items: center;
+    padding: 14px 18px;
+    border-top: 1px solid var(--border);
+    background: #fff;
+  }
+
+  .schedule-row:first-child {
+    border-top: 0;
+  }
+
+  .schedule-date {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .pill-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .pill {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    font-family: inherit;
+    user-select: none;
+  }
+
+  .pill:hover {
+    border-color: var(--primary);
+    color: var(--primary-dark);
+  }
+
+  .pill.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(13, 116, 144, 0.25);
+  }
+
+  .pill:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(13, 116, 144, 0.20);
+  }
+
+  /* Skills */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+
+  .skill-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fff;
+    font-size: 16px;
+    color: var(--text);
+  }
+
+  .skill-option:hover {
+    border-color: var(--primary);
+    background: #f9fcfd;
+  }
+
+  .skill-option input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+
+  .skill-option.checked {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+
+  textarea {
+    min-height: 90px;
+    resize: vertical;
+  }
+
+  /* Submit */
+  .submit-area {
+    margin-top: 32px;
+    text-align: center;
+  }
+
+  button.btn-primary {
+    background: var(--primary);
+    color: white;
+    padding: 16px 40px;
+    border-radius: 12px;
+    border: none;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+    min-width: 220px;
+  }
+
+  button.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(13, 116, 144, 0.30);
+  }
+
+  button.btn-primary:disabled {
+    background: var(--muted);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Success */
+  .success-state {
+    text-align: center;
+    padding: 50px 20px;
+  }
+
+  .success-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 22px;
+    font-size: 40px;
+  }
+
+  .success-state h2 {
+    margin-bottom: 12px;
+    font-size: 26px;
+  }
+
+  .success-state p {
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.6;
+    max-width: 460px;
+    margin: 0 auto;
+  }
+
+  /* Mobile */
+  @media (max-width: 640px) {
+    html { font-size: 16px; }
+    .card { padding: 22px 18px; }
+    header h1 { font-size: 24px; }
+    h2 { font-size: 20px; }
+
+    .schedule-row {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding: 16px;
+    }
+
+    .pill-row {
+      justify-content: stretch;
+    }
+
+    .pill {
+      padding: 12px 8px;
+      font-size: 14px;
+    }
+
+    .skills-grid {
+      grid-template-columns: 1fr;
+    }
+
+    button.btn-primary {
+      width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Blue Oaks Breakaway Construction</h1>
+    <p class="tagline">Volunteer Signup</p>
+  </header>
+
+  <div class="card" id="formCard">
+    <form id="signupForm" novalidate>
+
+      <!-- Contact -->
+      <section>
+        <h2>Your Info</h2>
+        <p class="subtitle">How can we reach you?</p>
+
+        <div class="form-group">
+          <label class="field-label" for="name">Full Name<span class="req">*</span></label>
+          <input type="text" id="name" name="name" required autocomplete="name" />
+          <div class="field-error" id="name-error">Please enter your full name.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label" for="email">Email Address<span class="req">*</span></label>
+          <input type="email" id="email" name="email" required autocomplete="email" />
+          <div class="field-error" id="email-error">Please enter a valid email address.</div>
+        </div>
+      </section>
+
+      <!-- Schedule -->
+      <section>
+        <h2>When Can You Help?</h2>
+        <p class="subtitle">Tap the time slots you're available. Leave blank for days you can't make it.</p>
+
+        <div class="schedule-list" id="scheduleList">
+          <!-- Rows generated by JS -->
+        </div>
+
+        <label class="flex-toggle" id="flexToggle">
+          <input type="checkbox" id="isFlexible" />
+          <div>
+            <p class="ft-title">I can be flexible if needed</p>
+            <p class="ft-sub">In addition to the times above, I'm willing to move things around to help where you need me.</p>
+          </div>
+        </label>
+      </section>
+
+      <!-- Skills -->
+      <section>
+        <h2>Your Skills</h2>
+        <p class="subtitle">Check anything you can confidently contribute. Don't worry if nothing fits — we'll find a place for you.</p>
+
+        <div class="skills-grid" id="skillsGrid">
+          <!-- Generated by JS -->
+        </div>
+
+        <div class="form-group">
+          <label class="field-label" for="otherSkills">Anything else you'd like us to know? (optional)</label>
+          <textarea id="otherSkills" name="otherSkills" placeholder="Other skills, experience, or notes"></textarea>
+        </div>
+      </section>
+
+      <div class="submit-area">
+        <button type="submit" class="btn-primary" id="submitBtn">Submit Signup</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card" id="successCard" style="display: none;">
+    <div class="success-state">
+      <div class="success-icon">&#10003;</div>
+      <h2>Thanks for signing up!</h2>
+      <p>We'll be in touch soon. Happy Breakaway Season!</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ============================================================
+  // CONFIGURATION — paste your deployed Apps Script Web App URL:
+  // ============================================================
+  const APPS_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+
+  const DATES = [
+    "Monday May 11", "Tuesday May 12", "Wednesday May 13", "Thursday May 14",
+    "Friday May 15", "Monday May 18", "Tuesday May 19", "Wednesday May 20",
+    "Thursday May 21", "Friday May 22", "Tuesday May 26", "Wednesday May 27",
+    "Thursday May 28", "Friday May 29", "Monday June 1", "Tuesday June 2",
+    "Wednesday June 3", "Thursday June 4", "Friday June 5", "Monday June 8",
+    "Tuesday June 9", "Wednesday June 10", "Thursday June 11", "Friday June 12"
+  ];
+
+  const SLOTS = [
+    { key: "morning",   label: "8am–12pm",  full: "8:00am–12:00pm" },
+    { key: "afternoon", label: "1pm–5pm",   full: "1:00pm–5:00pm"  },
+    { key: "evening",   label: "6pm–9pm",   full: "6:00pm–9:00pm"  }
+  ];
+
+  const SKILLS = [
+    "Woodworking", "Painting", "Graphic Design", "3D Modeling",
+    "Design-work", "Heavy-lifting", "Leadership (lead/communicate a project or task)"
+  ];
+
+  // ---------- Build schedule rows ----------
+  function buildSchedule() {
+    const list = document.getElementById("scheduleList");
+    DATES.forEach((dateLabel) => {
+      const row = document.createElement("div");
+      row.className = "schedule-row";
+      row.dataset.date = dateLabel;
+
+      const dateCell = document.createElement("div");
+      dateCell.className = "schedule-date";
+      dateCell.textContent = dateLabel;
+      row.appendChild(dateCell);
+
+      const pillRow = document.createElement("div");
+      pillRow.className = "pill-row";
+
+      SLOTS.forEach(slot => {
+        const pill = document.createElement("button");
+        pill.type = "button";
+        pill.className = "pill";
+        pill.textContent = slot.label;
+        pill.dataset.date = dateLabel;
+        pill.dataset.slot = slot.full;
+        pill.setAttribute("aria-pressed", "false");
+        pill.addEventListener("click", () => {
+          const active = pill.classList.toggle("active");
+          pill.setAttribute("aria-pressed", String(active));
+        });
+        pillRow.appendChild(pill);
+      });
+
+      row.appendChild(pillRow);
+      list.appendChild(row);
+    });
+  }
+
+  // ---------- Build skills options ----------
+  function buildSkills() {
+    const grid = document.getElementById("skillsGrid");
+    SKILLS.forEach((skill) => {
+      const lbl = document.createElement("label");
+      lbl.className = "skill-option";
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.name = "skill";
+      cb.value = skill;
+      const txt = document.createElement("span");
+      txt.textContent = skill;
+      lbl.appendChild(cb);
+      lbl.appendChild(txt);
+      grid.appendChild(lbl);
+
+      cb.addEventListener("change", () => {
+        lbl.classList.toggle("checked", cb.checked);
+      });
+    });
+  }
+
+  // ---------- Flexible toggle ----------
+  function wireFlexToggle() {
+    const cb = document.getElementById("isFlexible");
+    const wrap = document.getElementById("flexToggle");
+    cb.addEventListener("change", () => {
+      wrap.classList.toggle("checked", cb.checked);
+    });
+  }
+
+  // ---------- Validation ----------
+  function validate() {
+    let valid = true;
+    const email = document.getElementById("email");
+    const name = document.getElementById("name");
+
+    const nameValid = name.value.trim().length > 1;
+    document.getElementById("name-error").classList.toggle("show", !nameValid);
+    name.style.borderColor = nameValid ? "" : "var(--error)";
+    if (!nameValid) valid = false;
+
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim());
+    document.getElementById("email-error").classList.toggle("show", !emailValid);
+    email.style.borderColor = emailValid ? "" : "var(--error)";
+    if (!emailValid) valid = false;
+
+    if (!valid) {
+      // scroll first error into view
+      const firstError = document.querySelector(".field-error.show");
+      if (firstError) firstError.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    return valid;
+  }
+
+  // ---------- Submission ----------
+  document.getElementById("signupForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    const submitBtn = document.getElementById("submitBtn");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Submitting…";
+
+    const isFlexible = document.getElementById("isFlexible").checked;
+
+    // Collect schedule
+    const schedule = {};
+    DATES.forEach(d => { schedule[d] = []; });
+    document.querySelectorAll('.pill.active').forEach(pill => {
+      schedule[pill.dataset.date].push(pill.dataset.slot);
+    });
+
+    const skills = Array.from(document.querySelectorAll('input[name="skill"]:checked'))
+      .map(cb => cb.value);
+
+    const payload = {
+      name: document.getElementById("name").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      flexible: isFlexible,
+      schedule: schedule,
+      skills: skills,
+      otherSkills: document.getElementById("otherSkills").value.trim(),
+      dates: DATES
+    };
+
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+
+      document.getElementById("formCard").style.display = "none";
+      document.getElementById("successCard").style.display = "block";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      console.error(err);
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit Signup";
+      alert("Something went wrong submitting your signup. Please try again, or email us directly.");
+    }
+  });
+
+  // Init
+  buildSchedule();
+  buildSkills();
+  wireFlexToggle();
+</script>
+</body>
+</html>
