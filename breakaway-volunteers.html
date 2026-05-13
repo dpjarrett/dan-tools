@@ -104,6 +104,7 @@
 
   input[type="text"],
   input[type="email"],
+  input[type="tel"],
   textarea {
     width: 100%;
     padding: 14px 16px;
@@ -425,6 +426,12 @@
         </div>
 
         <div class="form-group">
+          <label class="field-label" for="phone">Phone<span class="req">*</span></label>
+          <input type="tel" id="phone" name="phone" required autocomplete="tel" inputmode="tel" placeholder="(555) 555-5555" />
+          <div class="field-error" id="phone-error">Please enter a valid phone number.</div>
+        </div>
+
+        <div class="form-group">
           <label class="field-label" for="email">Email Address<span class="req">*</span></label>
           <input type="email" id="email" name="email" required autocomplete="email" />
           <div class="field-error" id="email-error">Please enter a valid email address.</div>
@@ -478,7 +485,7 @@
     </div>
   </div>
 
-  <footer class="rev">v1.0</footer>
+  <footer class="rev">v1.1</footer>
 </div>
 
 <script>
@@ -579,11 +586,18 @@
     let valid = true;
     const email = document.getElementById("email");
     const name = document.getElementById("name");
+    const phone = document.getElementById("phone");
 
     const nameValid = name.value.trim().length > 1;
     document.getElementById("name-error").classList.toggle("show", !nameValid);
     name.style.borderColor = nameValid ? "" : "var(--error)";
     if (!nameValid) valid = false;
+
+    const phoneDigits = phone.value.replace(/\D/g, "");
+    const phoneValid = phoneDigits.length >= 7;
+    document.getElementById("phone-error").classList.toggle("show", !phoneValid);
+    phone.style.borderColor = phoneValid ? "" : "var(--error)";
+    if (!phoneValid) valid = false;
 
     const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim());
     document.getElementById("email-error").classList.toggle("show", !emailValid);
@@ -621,6 +635,7 @@
 
     const payload = {
       name: document.getElementById("name").value.trim(),
+      phone: document.getElementById("phone").value.trim(),
       email: document.getElementById("email").value.trim(),
       flexible: isFlexible,
       schedule: schedule,
